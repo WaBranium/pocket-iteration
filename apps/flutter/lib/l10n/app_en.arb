@@ -1,0 +1,754 @@
+{
+  "@@locale": "en",
+  "appTitle": "PocketCodex",
+  "webUnsupported": "PocketCodex needs local network and file access; Web is not supported.\nUse Android / iOS / desktop.",
+  "onboardingTitle": "Connect to a pb-mapper relay",
+  "importFieldLabel": "pcx1: share string (one-tap import)",
+  "importButton": "Import",
+  "relayFieldLabel": "relay host:port",
+  "keyFieldLabel": "MSG_HEADER_KEY (32 bytes)",
+  "save": "Save",
+  "cancel": "Cancel",
+  "relayEmpty": "relay address cannot be empty",
+  "keyLengthError": "MSG_HEADER_KEY must be exactly 32 bytes",
+  "accountSignInTitle": "Sign in",
+  "accountSignInButton": "Sign in with GitHub",
+  "accountUseDeviceCode": "Use a device code instead",
+  "accountSessionExpiredTitle": "Your session expired",
+  "accountSessionExpiredMessage": "Your saved sign-in can no longer be renewed. Sign in again to reconnect to your services.",
+  "accountSignInAgain": "Sign in again",
+  "accountWebFailed": "Sign-in didn't complete. Please try again.",
+  "accountWebTrouble": "Browser sign-in didn't finish — either the GitHub page wouldn't load, or the browser couldn't hand the result back to this app. The device code below avoids the hand-off entirely.",
+  "accountSignedIn": "Signed in",
+  "accountSignedInAs": "Signed in as @{login}",
+  "@accountSignedInAs": {
+    "placeholders": { "login": { "type": "String" } }
+  },
+  "accountEnterCode": "Enter this code on GitHub to finish signing in:",
+  "accountCopyCode": "Copy code",
+  "accountOpenGitHub": "Open GitHub",
+  "accountWaiting": "Waiting for you to authorize on GitHub…",
+  "accountCodeExpired": "The code expired. Please try again.",
+  "accountDenied": "Sign-in was denied on GitHub.",
+  "accountAdvancedSelfHost": "Use a self-hosted relay instead",
+  "accountAdvanced": "Advanced / self-hosted",
+  "accountBackendHint": "Backend URL (blank = default)",
+  "accountSection": "Account",
+  "accountSignOut": "Sign out",
+  "connecting": "Connecting…",
+  "conversationsSection": "Conversations",
+  "newConversation": "New conversation",
+  "noThreads": "No conversations yet",
+  "untitledThread": "(untitled)",
+  "renameConversation": "Rename",
+  "renameConversationHint": "Conversation name",
+  "renameHint": "Click to rename",
+  "retryingAttempt": "Retrying… {attempt}/{max}",
+  "@retryingAttempt": {
+    "placeholders": { "attempt": { "type": "int" }, "max": { "type": "int" } }
+  },
+  "renameFailed": "Couldn't rename the conversation",
+  "showMoreCount": "Show {count} more",
+  "@showMoreCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "showLess": "Show less",
+  "messageHint": "Message…",
+  "send": "Send",
+  "voiceLive": "Live voice",
+  "voiceSessionEnded": "Live voice · ended",
+  "voiceYou": "You",
+  "voiceAgent": "Agent",
+  "addAttachment": "Add",
+  "turnSettings": "Turn settings",
+  "prevTurn": "Previous turn",
+  "nextTurn": "Next turn",
+  "jumpToLatest": "Jump to latest",
+  "attachImage": "Attach image",
+  "removeImage": "Remove image",
+  "imagePickFailed": "Couldn't read the selected image",
+  "imageTooMany": "At most {count} images per message",
+  "@imageTooMany": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "imageSave": "Save image",
+  "previewImage": "Click to preview",
+  "imageLoadFailed": "Couldn't load this image",
+  "imageSaved": "Saved to {path}",
+  "@imageSaved": {
+    "placeholders": { "path": { "type": "String" } }
+  },
+  "imageSaveFailed": "Couldn't save the image: {error}",
+  "@imageSaveFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "imageOnHost": "Image file on the host machine: {path}",
+  "@imageOnHost": {
+    "placeholders": { "path": { "type": "String" } }
+  },
+  "imageOnlyMessage": "[Image]",
+  "attachFile": "Attach file",
+  "dropToAttach": "Drop to attach",
+  "queuedCount": "{count, plural, =1{1 message queued} other{{count} messages queued}}",
+  "@queuedCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "queuedHint": "Sends after the current reply. Esc puts the last one back.",
+  "removeQueued": "Remove from queue",
+  "removeFile": "Remove file",
+  "filePickFailed": "Couldn't read the selected file",
+  "fileTooMany": "At most {count} files per message",
+  "@fileTooMany": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "fileTooLarge": "File exceeds the {mb} MB limit",
+  "@fileTooLarge": {
+    "placeholders": { "mb": { "type": "int" } }
+  },
+  "fileUploadFailed": "Couldn't upload the file to the host",
+  "fileOnlyMessage": "[File]",
+  "interrupt": "Interrupt",
+  "thinking": "Thinking…",
+  "emptyConversation": "Send a message to start the conversation",
+  "olderHistoryHint": "Load earlier messages",
+  "historyStart": "Start of conversation",
+  "historyLoading": "Loading history…",
+  "historyRetry": "Couldn’t load history. Retry",
+  "@olderHistoryHint": {
+    "description": "Leading row of a long conversation whose earlier history hasn't been loaded yet; scrolling to it fetches the previous page."
+  },
+  "turnFailed": "Turn didn't finish — the connection dropped or the remote codex failed. Retry, or check codex on the host machine (it may need to be logged in again).",
+  "sandboxHelperUnavailable": "This built-in (自带) session can't start its command sandbox, so the agent can't run commands or read files here. Switch to \"Full access\" mode to run without a sandbox, or connect to an external/remote codex host.",
+  "@sandboxHelperUnavailable": {
+    "description": "Shown when an embedded (in-process) codex turn fails because the OS sandbox helpers aren't available; guides the user to the no-sandbox Full mode or an external host."
+  },
+  "disconnect": "Disconnect",
+  "connectionLost": "Connection lost",
+  "reconnect": "Reconnect",
+  "projectsSection": "Projects",
+  "newProject": "New project",
+  "effortFaster": "Faster",
+  "effortSmarter": "Smarter",
+  "searchProjects": "Search projects",
+  "noMatchingProjects": "No matching projects",
+  "workOutsideProject": "Work outside a project",
+  "switchProjectTip": "Switch project",
+  "newSessionTitleIn": "What should we build in {project}?",
+  "@newSessionTitleIn": {
+    "placeholders": { "project": { "type": "String" } }
+  },
+  "remotePathLabel": "Remote folder path (on the host)",
+  "remotePathHint": "e.g. /home/ubuntu/myproject — blank uses the host default",
+  "model": "Model",
+  "modelDefault": "Default model",
+  "defaultFolder": "Default folder",
+  "permissionMode": "Permission",
+  "modeReadOnly": "Read-only",
+  "modeReadOnlyDesc": "Ask before running; no file writes",
+  "modeAuto": "Auto",
+  "modeAutoDesc": "Let Codex review approval requests for you, within the workspace sandbox.",
+  "modeFull": "Full access",
+  "modeFullDesc": "No sandbox, never ask (use with care)",
+  "approvalPrompt": "The agent wants to run a command",
+  "approvalFilePrompt": "The agent wants to edit files",
+  "approvalPermissionPrompt": "The agent requests additional permission",
+  "approve": "Approve",
+  "approveForSession": "Approve for session",
+  "deny": "Deny",
+  "userInputTitle": "The agent needs your input",
+  "userInputSubmit": "Submit",
+  "userInputOther": "Other…",
+  "planMode": "Plan",
+  "planReadyTitle": "Plan ready",
+  "implementPlan": "Implement plan",
+  "keepPlanning": "Keep planning",
+  "implementPlanPrompt": "Go ahead and implement the plan above.",
+  "noModelForMode": "Can't switch mode: no model is available",
+  "effort": "Effort",
+  "effortMinimal": "Minimal",
+  "effortMinimalDesc": "Least thinking, fastest",
+  "effortLow": "Low",
+  "effortLowDesc": "A little thinking",
+  "effortMedium": "Medium",
+  "effortMediumDesc": "Balanced (usual default)",
+  "effortHigh": "High",
+  "effortHighDesc": "Thorough",
+  "effortXhigh": "Extra high",
+  "effortXhighDesc": "Most thorough, slowest",
+  "linkOpenFailed": "Couldn't open the link",
+  "contextLabel": "Context",
+  "contextUsageTitle": "Context & usage",
+  "quota5h": "5-hour limit",
+  "quotaWeekly": "Weekly limit",
+  "quotaUnavailable": "Quota information is unavailable.",
+  "quotaRemaining": "Usage left",
+  "resetsIn": "resets in {span}",
+  "@resetsIn": {
+    "placeholders": { "span": { "type": "String" } }
+  },
+  "moreActions": "More",
+  "backToSessions": "Back to sessions",
+  "stateReady": "Ready",
+  "stateWorking": "Working…",
+  "statePlanning": "Planning…",
+  "statePlanMode": "Plan mode",
+  "stateDisconnected": "Disconnected",
+  "stateReconnecting": "Reconnecting…",
+  "compactingContext": "Compacting context…",
+  "compacted": "Conversation compacted",
+  "turnStopped": "Stopped",
+  "turnElapsed": "Took {duration}",
+  "@turnElapsed": {
+    "placeholders": { "duration": { "type": "String" } }
+  },
+  "turnProcessed": "Worked for {duration}",
+  "@turnProcessed": {
+    "description": "Collapsed header for a turn's tool calls and reasoning.",
+    "placeholders": { "duration": { "type": "String" } }
+  },
+  "turnProcessing": "Working, {count} steps so far",
+  "turnActivityCount": "{count} steps",
+  "@turnActivityCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "@turnProcessing": {
+    "description": "Same header while the turn is still running, when no duration exists yet.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "completedAt": "Completed at {time}",
+  "@completedAt": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "activeModelTooltip": "Active model & settings — tap for details",
+  "runtimeSheetTitle": "Runtime configuration",
+  "runtimeEffortModelDefault": "Model default",
+  "runtimeCollabDefault": "Default",
+  "runtimeConfirmedAt": "Confirmed by the server · {time}",
+  "@runtimeConfirmedAt": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "runtimeFromSnapshot": "From the server's session snapshot · {time}",
+  "@runtimeFromSnapshot": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "runtimeUnavailable": "This server doesn't report runtime settings; showing what the app sends.",
+  "runtimeConfirmed": "Confirmed by the server",
+  "runtimeUnconfirmed": "As sent by the app — the server didn't report back",
+  "turnHandledBy": "Handled by {model}",
+  "@turnHandledBy": {
+    "placeholders": { "model": { "type": "String" } }
+  },
+  "modelReroutedNote": "The server switched to this model mid-turn",
+  "refreshStatus": "Refresh status",
+  "statusOnline": "Online",
+  "statusConnected": "Connected",
+  "statusChecking": "Checking…",
+  "statusUnreachable": "Unreachable",
+  "unreachableReason": "Still registered on the relay, but the remote app-server isn't responding — it may not be running, or has crashed.",
+  "unreachableAuthRejected": "The relay refused the connection: the authentication code is missing or no longer valid. The tunnel itself works and the remote host is not down — sign in again, or re-enter the relay key, under Manage services.",
+  "unreachableSilent": "The tunnel is up, but the remote app-server didn't answer before the timeout — it may still be starting, wedged, or gone.",
+  "apiUnreachableReason": "Still registered on the relay, but the remote API service isn't responding — it may not be running, or has crashed.",
+  "subscribedAlive": "Subscribed",
+  "subscribedDead": "Dropped",
+  "compact": "Compact conversation",
+  "compactConfirm": "Summarise and shrink this conversation to free up context? This can't be undone.",
+  "viewDiff": "View changes",
+  "cancelDiffLoad": "Cancel loading changes",
+  "changesTitle": "Changes",
+  "noChanges": "No changes vs the main branch.",
+  "envTitle": "Environment",
+  "envLocal": "Local",
+  "envProject": "Project",
+  "envSource": "Source",
+  "envRefresh": "Refresh",
+  "diffTruncated": "{count} more lines not shown — copy the path to view the full diff",
+  "@diffTruncated": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "diffUnmodified": "{count} unmodified lines",
+  "@diffUnmodified": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "diffExpandFailed": "{count} unmodified lines (couldn't load)",
+  "@diffExpandFailed": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "reviewTitle": "Review",
+  "reviewNoFiles": "No changed files.",
+  "reviewPickFile": "Pick a file to review its changes.",
+  "envFilesChanged": "{count} files changed",
+  "@envFilesChanged": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "turnProgressStep": "Step {current} of {total}",
+  "@turnProgressStep": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "start": "Start",
+  "create": "Create",
+  "copy": "Copy",
+  "copied": "Copied",
+  "toolSearched": "Searched the web",
+  "toolRan": "Ran command",
+  "toolEdited": "Edited files",
+  "toolCalled": "Used a tool",
+  "toolCollaborated": "Coordinated agents",
+  "toolSubAgent": "Subagent activity",
+  "toolViewedImage": "Viewed image",
+  "toolGeneratedImage": "Generated image",
+  "toolWaited": "Waited",
+  "toolHook": "Hook prompt",
+  "toolEnteredReview": "Entered review",
+  "toolExitedReview": "Exited review",
+  "toolThinking": "Thinking",
+  "toolPlan": "Plan",
+  "toolActivity": "Activity",
+  "relayNotConfigured": "(no relay configured)",
+  "retry": "Retry",
+  "discoverFailed": "Couldn't reach the relay",
+  "localPortLabel": "Local port",
+  "startSubscription": "Start subscription",
+  "stop": "Stop",
+  "portRangeError": "Port must be an integer from 1 to 65535",
+  "noAuthWarning": "⚠ The local endpoint has no auth and binds 127.0.0.1 only. Alive only while the app is foregrounded.",
+  "subscribeFailed": "Couldn't start the subscription",
+  "settingsTitle": "Settings",
+  "utilityChat": "Conversation",
+  "utilityPages": "Pages",
+  "utilitySwitchPage": "Switch page",
+  "settingsGeneral": "General",
+  "settingsAccountConnection": "Account & connection",
+  "settingsServicesSubscriptions": "Services & subscriptions",
+  "settingsAdvanced": "Advanced",
+  "settingsSelfHostedRelay": "Self-hosted relay fallback",
+  "settingsSelfHostedKey": "Self-hosted relay key",
+  "settingsExportUnavailable": "Configure a self-hosted relay and 32-byte key first.",
+  "settingsOperationFailed": "Operation failed: {error}",
+  "@settingsOperationFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "settingsDiagnostics": "Diagnostics",
+  "settingsConfigure": "Configure",
+  "settingsEdit": "Edit",
+  "trayShow": "Show window",
+  "trayQuit": "Quit",
+  "windowMinimize": "Minimize",
+  "windowMaximize": "Maximize",
+  "windowRestore": "Restore",
+  "windowClose": "Close",
+  "relayRow": "relay",
+  "notConfigured": "(not configured)",
+  "keyRow": "MSG_HEADER_KEY",
+  "keySet": "•••••••• (set)",
+  "keyNotSet": "(not set)",
+  "activeSubscriptions": "Active subscriptions",
+  "none": "(none)",
+  "exportShareString": "Export pcx1: share string",
+  "copiedShareString": "Copied pcx1: share string",
+  "language": "Language",
+  "languageSystem": "Follow system",
+  "languageChinese": "简体中文",
+  "languageEnglish": "English",
+  "appearance": "Appearance",
+  "appearanceSystem": "Follow system",
+  "appearanceLight": "Light",
+  "appearanceDark": "Dark",
+  "newSessionTitle": "What should we build?",
+  "newSessionSubtitle": "Pick a starting point, or just type your task below.",
+  "suggestExploreTitle": "Explore the project",
+  "suggestExplorePrompt": "Give me an overview of this project — its structure, main modules, and tech stack.",
+  "suggestTestsTitle": "Run & fix tests",
+  "suggestTestsPrompt": "Run the test suite and fix any failing tests.",
+  "suggestDiffTitle": "Review changes",
+  "suggestDiffPrompt": "Summarize the current working-tree changes against the main branch.",
+  "suggestPlanTitle": "Plan a feature",
+  "suggestPlanPrompt": "Help me plan out a new feature before writing any code.",
+  "searchConversations": "Search conversations",
+  "searchLocalSessions": "Search content / path / source",
+  "noMatchingThreads": "No matching conversations",
+  "groupActive": "Active",
+  "groupToday": "Today",
+  "groupYesterday": "Yesterday",
+  "groupEarlier": "Earlier",
+  "activityView": "Activity",
+  "running": "Running…",
+  "timeJustNow": "just now",
+  "timeMinutesAgo": "{n}m ago",
+  "@timeMinutesAgo": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "timeHoursAgo": "{n}h ago",
+  "@timeHoursAgo": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "timeYesterday": "yesterday",
+  "timeDaysAgo": "{n}d ago",
+  "@timeDaysAgo": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "modelLabel": "Model",
+  "permissionLabel": "Permission",
+  "localSessions": "Local sessions",
+  "localSessionsTitle": "Local sessions",
+  "noLocalSessions": "No local sessions",
+  "sessionResumable": "Resumable",
+  "sessionUnfinished": "Last turn interrupted",
+  "sessionRunningElsewhere": "Running elsewhere",
+  "sessionInUseElsewhere": "In use elsewhere",
+  "sessionReadOnly": "Read-only",
+  "readOnlyViewing": "Read-only — another client is using this session",
+  "sessionTranscriptEmpty": "Nothing to show yet",
+  "resumeSession": "Resume",
+  "forceTakeover": "Force takeover",
+  "takeoverTitle": "Force takeover?",
+  "takeoverBody": "This session is held open by {n} other process(es). PocketCodex will try to terminate them, then resume it here. Any unsaved work in those processes will be lost.",
+  "@takeoverBody": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "takeoverWillTerminate": "Will terminate",
+  "takeoverConfirm": "Terminate & resume",
+  "takeoverResumed": "Session resumed",
+  "takeoverKilled": "Terminated {n} process(es)",
+  "@takeoverKilled": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "takeoverStillHeld": "Still held open — resumed anyway",
+  "takeoverResumeFailed": "Resume failed: {error}",
+  "@takeoverResumeFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "takeoverNoTarget": "Connect to an app-server service first to resume.",
+  "holderRow": "{name} · PID {pid}",
+  "@holderRow": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "pid": { "type": "int" }
+    }
+  },
+  "localHostingSection": "Local hosting",
+  "localHostRunning": "Hosting",
+  "localHostStarting": "Starting…",
+  "localHostUnresponsive": "Not responding",
+  "startHosting": "Start hosting",
+  "stopHosting": "Stop hosting",
+  "localHostPort": "Port",
+  "localHostName": "Instance name",
+  "codexBinaryPath": "codex binary path",
+  "codexNotFound": "codex wasn't found on PATH — enter its full path below, or install it and tap Re-detect.",
+  "codexRedetect": "Re-detect",
+  "codexSourceExternal": "External Codex",
+  "codexSourceBuiltin": "Built-in engine",
+  "codexBuiltinNote": "Not implemented yet. Use external Codex.",
+  "hostRuntimeInfo": "Runtime",
+  "hostRuntimeMode": "codex",
+  "hostCodexVersion": "Version",
+  "hostCodexPath": "Path",
+  "hostProxyLabel": "Proxy",
+  "hostProxyInherit": "inherits the app's environment",
+  "localHostDialogTitle": "Host a local app-server",
+  "localHostHint": "Runs codex on this machine and registers it to your account, so your other devices can drive it.",
+  "localHostListening": "Listening on {addr}",
+  "@localHostListening": {
+    "placeholders": { "addr": { "type": "String" } }
+  },
+  "codexFoundAt": "codex found: {path}",
+  "@codexFoundAt": {
+    "placeholders": { "path": { "type": "String" } }
+  },
+  "chooseCodexPath": "Choose codex binary…",
+  "codexPathRequired": "Choose the codex binary to continue.",
+  "useProxy": "Use a proxy",
+  "proxyLabel": "Proxy",
+  "proxyRequired": "Enter a proxy, or turn off “Use a proxy”.",
+  "noProxyWarning": "Without a proxy, codex on this machine may fail to reach chatgpt.com.",
+  "addLocalHost": "Host another…",
+  "customizeCodexPath": "Change path",
+  "deregister": "Deregister",
+  "reregister": "Re-register",
+  "deregisterTitle": "Deregister this service?",
+  "deregisterWarning": "Remove “{name}” from your account's relay listing. If a host is still running it, it will re-register within seconds — stop that host to remove it for good.",
+  "@deregisterWarning": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "deregisterLocalWarning": "Take “{name}” off the relay. codex and the API proxy keep running — re-register it from the Local hosting card anytime.",
+  "@deregisterLocalWarning": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "deregisterOrphanTitle": "Remove this unreachable service?",
+  "deregisterOrphanWarning": "“{name}” isn't responding — its registration is lingering on the relay with no reachable host. This removes it from your list (and keeps it hidden even if the stale registration lingers), and asks the backend to drop it.",
+  "@deregisterOrphanWarning": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "remove": "Remove",
+  "deregisterFailed": "Couldn't deregister the service",
+  "hostNameConflict": "This server name is already online from another instance. Stop that instance first, or host under a different name. (A just-stopped server frees its name within ~15 seconds.)",
+  "batchRemoveEnter": "Clean up unreachable",
+  "batchRemoveTitle": "Remove these unreachable services?",
+  "batchRemoveWarning": "Remove {count} unreachable services from this device's list. Any that recover will re-appear.",
+  "@batchRemoveWarning": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "batchRemovedSnack": "Removed {count} services",
+  "@batchRemovedSnack": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "tunnelAppLabel": "App-server",
+  "tunnelApiLabel": "API",
+  "tunnelOffline": "Offline",
+  "logsTitle": "Runtime logs",
+  "logsLive": "Live capture",
+  "logsLevelAll": "All",
+  "logsKeywordHint": "error, host, tunnel…",
+  "logsCopy": "Copy visible logs",
+  "logsClear": "Clear logs",
+  "logsScrollBottom": "Scroll to bottom",
+  "logsEmpty": "No logs yet",
+  "logsVisible": "{visible}/{total} shown",
+  "@logsVisible": {
+    "placeholders": { "visible": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "logsCopied": "Copied {count} log lines",
+  "@logsCopied": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "manageServices": "Manage services",
+  "servicesHostThisDevice": "Host this device",
+  "servicesDevices": "Devices",
+  "servicesDeviceCapabilityCount": "{count} capabilities",
+  "@servicesDeviceCapabilityCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "servicesLocalDevice": "This device",
+  "servicesCapabilities": "Available capabilities",
+  "servicesChatCapability": "Conversation service",
+  "servicesApiCapability": "Responses API",
+  "servicesSessionsCapability": "Session sharing",
+  "servicesDefault": "Default",
+  "servicesSetDefault": "Set as default",
+  "servicesOpen": "Open",
+  "servicesManage": "Manage",
+  "servicesBrowse": "Browse",
+  "servicesNoCapabilities": "No capabilities are currently available on this device",
+  "hostSessions": "Host session history",
+  "homeConnecting": "Connecting to your Codex host…",
+  "homeRestoringHost": "Restoring hosting…",
+  "homeNoServiceTitle": "No Codex host available",
+  "homeNoServiceDesktopHint": "Start hosting on this computer and the chat opens right here — your phone can connect to it too.",
+  "homeNoServiceMobileHint": "Open PocketCodex on your computer and start hosting (app-server); this screen will enter the chat automatically.",
+  "homeNoServiceSelfHostHint": "Run `pocket-codex serve` on a machine with codex to publish an app-server on your relay, or sign in with an account to host from this app.",
+  "homeAutoRetryNote": "Keeps checking for hosts automatically.",
+  "switchServiceFailed": "Couldn't reach that host — staying on the current one.",
+  "pickFolderTitle": "Choose a project folder",
+  "useThisFolder": "Use this folder",
+  "folderUp": "Up one level",
+  "folderPickerEmpty": "No sub-folders here",
+  "folderPickerNoRoots": "No project folders are configured on this host yet. Add them on the computer under hosting settings.",
+  "gitRepoLabel": "Git repository",
+  "hostFiles": "Host files",
+  "fileBrowserEmpty": "This folder is empty",
+  "fileDownload": "Download",
+  "fileUpload": "Upload",
+  "fileDownloaded": "Downloaded to {path}",
+  "@fileDownloaded": {
+    "placeholders": { "path": {} }
+  },
+  "fileDownloadFailed": "Couldn't download: {error}",
+  "@fileDownloadFailed": {
+    "placeholders": { "error": {} }
+  },
+  "fileUploaded": "Uploaded {name}",
+  "@fileUploaded": {
+    "placeholders": { "name": {} }
+  },
+  "hostFileUploadFailed": "Couldn't upload: {error}",
+  "@hostFileUploadFailed": {
+    "placeholders": { "error": {} }
+  },
+  "browseProjectFolder": "Browse project folders",
+  "orEnterPathManually": "Or enter a path manually:",
+  "projectFolders": "Project folders",
+  "projectFoldersHint": "Folders your phone can browse to start a session in. Star one to make it the default for new conversations.",
+  "noProjectFolders": "No project folders yet.",
+  "addProjectFolder": "Add folder",
+  "defaultProjectFolder": "Default folder",
+  "setAsDefault": "Set as default",
+  "removeProjectFolder": "Remove",
+  "welcomeTitle": "Welcome to PocketCodex",
+  "welcomeSubtitleDesktop": "One step left: start hosting on this computer, and your phone can drive its Codex from anywhere.",
+  "welcomeSubtitleMobile": "PocketCodex remote-controls the Codex running on your computer. Set up hosting there once and you're ready.",
+  "welcomeStepHost": "Start hosting on this computer",
+  "welcomeStepHostDesc": "One click brings up a codex app-server and publishes it to your account — the defaults just work.",
+  "welcomeHostRunning": "Hosting is up",
+  "welcomeStepFolders": "Configure project folders (optional)",
+  "welcomeStepFoldersDesc": "Your phone browses these folders visually to start a session in the right project.",
+  "welcomeFoldersLocked": "Available once hosting is up.",
+  "welcomeMobileStep1": "Install and open PocketCodex on your computer",
+  "welcomeMobileStep2": "Sign in with the same GitHub account",
+  "welcomeMobileStep3": "Tap \"Start hosting\" — one click completes the setup",
+  "welcomeWaitingHost": "Watching for your host to come online…",
+  "welcomeHostFound": "Host found: {label}",
+  "@welcomeHostFound": {
+    "placeholders": { "label": { "type": "String" } }
+  },
+  "welcomeDownloadDesktop": "Get the desktop app",
+  "welcomeEnterChat": "Enter the chat",
+  "welcomeSkip": "Skip the guide",
+  "codexSetup": "Configure Codex",
+  "codexChatNeedsSetup": "Model access isn't set up yet — configure Codex before chatting.",
+  "codexSetupStepTitle": "Configure Codex model access",
+  "codexSetupStepDesc": "Fill in a provider (URL + API Key) or sign in with ChatGPT, and optionally switch on the non-degraded system prompt.",
+  "codexSetupProviderSection": "Custom provider",
+  "codexSetupProviderDesc": "Point codex at a third-party or self-hosted model service with its Base URL and API key.",
+  "codexSetupModelLabel": "Model (optional, default gpt-5.5)",
+  "codexSetupSaveProvider": "Save and use",
+  "codexSetupLoginSection": "ChatGPT login",
+  "codexSetupLoginDesc": "Run the model on your ChatGPT subscription; codex generates the credential itself.",
+  "codexSetupLoginButton": "Sign in with ChatGPT",
+  "codexSetupLoginWaiting": "Waiting for the browser login…",
+  "codexSetupMethodsTitle": "Model access",
+  "codexSetupMethodsHint": "Pick either one — codex uses whichever you configured last.",
+  "codexSetupInUse": "In use",
+  "codexSetupSwitchTo": "Switch to this",
+  "codexSetupProxyNote": "On a restricted network this needs a proxy: set one when you start local hosting.",
+  "codexSetupAdvanced": "Advanced",
+  "codexSetupNonDegradedTitle": "Non-degraded system prompt",
+  "codexSetupNonDegradedDesc": "Removes the commentary / progress-report instructions that interrupt the reasoning chain, so the model spends its budget on reasoning.",
+  "codexSetupNonDegradedScope": "Applies to new conversations",
+  "codexSetupNonDegradedIssue": "openai/codex#30364",
+  "codexSetupNeedFields": "Please fill in both Base URL and API Key.",
+  "codexSetupProviderSaved": "Provider saved. Restart local hosting to use it.",
+  "codexSetupNeedHost": "Start local hosting under Services first, then sign in with ChatGPT.",
+  "codexSetupLoginOpened": "Opened the login page in your browser; completion is detected automatically…",
+  "codexSetupDeviceOpened": "Opened the verification page in your browser. Enter the code below there; completion is detected automatically…",
+  "codexSetupDeviceCodeLabel": "Verification code",
+  "codexSetupDeviceReopen": "Reopen verification page",
+  "codexSetupLoginSuccess": "Signed in ({method}).",
+  "@codexSetupLoginSuccess": {
+    "placeholders": { "method": { "type": "String" } }
+  },
+  "codexSetupLoginTimeout": "Login timed out, please retry.",
+  "codexSetupStatusProvider": "Custom provider configured",
+  "codexSetupStatusAuth": "Signed in ({method})",
+  "@codexSetupStatusAuth": {
+    "placeholders": { "method": { "type": "String" } }
+  },
+  "codexSetupStatusNeedSetup": "Not configured yet",
+  "codexSetupStatusNeedSetupHint": "codex cannot make a model call yet. Configure either method below.",
+  "codexSetupStatusReadyHint": "codex can make model calls.",
+  "codexSetupCodexHomeLabel": "Config directory",
+  "codexSetupCredentialExists": "credential present",
+  "resizeComposer": "Drag to resize; double-click to reset",
+  "historyGap": "Load messages in this gap",
+  "reviewRequest": "Automatic review request",
+  "reviewResult": "Model review result",
+  "reviewAllowed": "Allowed",
+  "reviewDenied": "Denied",
+  "reviewLow": "Low",
+  "reviewMedium": "Medium",
+  "reviewHigh": "High",
+  "reviewCritical": "Critical",
+  "reviewUnknown": "Unknown",
+  "reviewRisk": "Risk: {level}",
+  "@reviewRisk": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewAuthorization": "Authorization: {level}",
+  "@reviewAuthorization": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewRaw": "View original content",
+  "conversationOutline": "Conversation outline",
+  "searchTurns": "Search messages or enter a turn number",
+  "turnPosition": "Turn {current} of {total}",
+  "@turnPosition": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "stepRange": "Steps {first}–{last} of {total}",
+  "@stepRange": {
+    "placeholders": {
+      "first": {
+        "type": "int"
+      },
+      "last": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "previousSteps": "Previous steps",
+  "nextSteps": "Next steps",
+  "latestSteps": "Latest steps",
+  "jumpToStep": "Jump to step",
+  "stepNumber": "Step number",
+  "noMatchingTurns": "No matching turns",
+  "loadingTurn": "Opening turn {number}…",
+  "@loadingTurn": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "historySyncing": "Syncing history…",
+  "historyCachedOffline": "Cached history · waiting to sync",
+  "historyCacheTitle": "Conversation cache",
+  "historyCacheDescription": "Shared disk limit in MB. 0 disables caching.",
+  "historyCacheUsage": "{used} MB used · {limit} MB limit",
+  "historyCacheInvalid": "Enter a whole number from 0 to 64000.",
+  "@historyCacheUsage": {
+    "placeholders": {
+      "used": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "modeAsk": "Ask for approval",
+  "modeAskDesc": "Work in the workspace; ask you before actions that require approval.",
+  "fastMode": "Fast",
+  "fastModeHint": "Use the model’s Fast service tier for subsequent turns.",
+  "steerMessage": "Supplement",
+  "steerMessageHint": "Add to the current turn at its next step. Otherwise, queue for the next turn.",
+  "queueNextTurn": "Queue for next turn",
+  "steerTurnEnded": "The turn changed or ended. Your draft is kept; send it as a new turn.",
+  "advancedSettings": "Advanced settings",
+  "planModeDescription": "Plan first without implementing. Normal mode is recommended for most tasks.",
+  "imageGenerating": "Generating image…",
+  "imageLoading": "Loading image…",
+  "imageGenerationFailed": "Image generation failed",
+  "imageGenerationIncomplete": "Image generation incomplete",
+  "imageGenerationUnavailable": "No image was returned",
+  "imageGenerationLimit": "Image generation usage limit reached",
+  "fileLinkPreview": "Preview",
+  "fileLinkDownload": "Download",
+  "fileLinkUnsupported": "This file cannot be previewed. Download it to open with an app on your device.",
+  "fileLinkTruncated": "Showing a limited preview. Download for the complete file.",
+  "fileLinkLoading": "Loading file…",
+  "fileLinkRemoteWebTitle": "Website on the host",
+  "fileLinkRemoteWeb": "This address points to the controlled device, not this device. Use pb-mapper to register the web service port on the host and subscribe to it on this device, then open the mapped local address. Keep the URL path and query unchanged.",
+  "fileLinkCheckingHost": "Checking host location…",
+  "fileLinkFailed": "Unable to read the file. Check that it still exists and the host is running a version that supports file links.",
+  "fileLinkClose": "Close"
+}

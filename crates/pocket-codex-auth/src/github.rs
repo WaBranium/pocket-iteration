@@ -1,0 +1,213 @@
+//! The two GitHub Device Flow HTTP calls plus the `/user` profile fetch.
+//!
+//! GitHub's device flow is a pair of well-defined form POSTs; we make them
+//! directly with `reqwest` rather than an OAuth helper because the backend
+//! polls exactly once per client request (no blocking poll loop).
+
+use serde::Deserialize;
+
+use crate::error::{AuthError, Result};
+
+const DEVICE_CODE_URL: &str = "https://github.com/login/device/code";
+const AUTHORIZE_URL: &str = "https://github.com/login/oauth/authorize";
+const ACCESS_TOKEN_URL: &str = "https://github.com/login/oauth/access_token";
+const USER_URL: &str = "https://api.github.com/user";
+const DEVICE_GRANT: &str = "urn:ietf:params:oauth:grant-type:device_code";
+
+#[derive(Clone)]
+pub(crate) struct GitHubEndpoints {
+    device_code_url: String,
+    authorize_url: String,
+    access_token_url: String,
+    user_url: String,
+}
+
+impl GitHubEndpoints {
+    fn github() -> Self {
+        Self {
+            device_code_url: DEVICE_CODE_URL.to_string(),
+            authorize_url: AUTHORIZE_URL.to_string(),
+            access_token_url: ACCESS_TOKEN_URL.to_string(),
+            user_url: USER_URL.to_string(),
+        }
+    }
+
+    #[cfg(test)]
+    pub(crate) fn from_base_url(base_url: &str) -> Self {
+        let base = base_url.trim_end_matches('/');
+        Self {
+            device_code_url: format!("{base}/login/device/code"),
+            authorize_url: format!("{base}/login/oauth/authorize"),
+            access_token_url: format!("{base}/login/oauth/access_token"),
+            user_url: format!("{base}/user"),
+        }
+    }
+}
+
+/// Device-code response from `POST /login/device/code`.
+#[derive(Debug, Deserialize)]
+pub(crate) struct DeviceCode {
+    pub device_code: String,
+    pub user_code: String,
+    pub verification_uri: String,
+    pub expires_in: i64,
+    pub interval: i64,
+}
+
+/// Outcome of one access-token poll.
+pub(crate) enum PollResult {
+    /// Not authorized yet.
+    Pending,
+    /// Polling too fast.
+    SlowDown {
+        /// Updated minimum seconds before the next token request, when GitHub
+        /// includes it.
+        interval_secs: Option<u64>,
+    },
+    /// Authorized; carries the GitHub access token.
+    Authorized(String),
+    /// The device code expired.
+    Expired,
+    /// The user denied the request.
+    Denied,
+}
+
+/// GitHub user profile (`GET /user`).
+#[derive(Debug, Deserialize)]
+pub(crate) struct GhUser {
+    pub id: i64,
+    pub login: String,
+}
+
+/// Thin GitHub client bound to one OAuth app's `client_id`.
+pub(crate) struct GitHub {
+    http: reqwest::Client,
+    client_id: String,
+    endpoints: GitHubEndpoints,
+}
+
+impl GitHub {
+    pub(crate) fn new(http: reqwest::Client, client_id: String) -> Self {
+        Self {
+            http,
+            client_id,
+            endpoints: GitHubEndpoints::github(),
+        }
+    }
+
+    #[cfg(test)]
+    pub(crate) fn new_with_base_url(
+        http: reqwest::Client,
+        client_id: String,
+        base_url: &str,
+    ) -> Self {
+        Self {
+            http,
+            client_id,
+            endpoints: GitHubEndpoints::from_base_url(base_url),
+        }
+    }
+
+    /// Request a device + user code for the given scope.
+    pub(crate) async fn request_device_code(&self, scope: &str) -> Result<DeviceCode> {
+        let resp = self
+            .http
+            .post(&self.endpoints.device_code_url)
+            .header(reqwest::header::ACCEPT, "application/json")
+            .form(&[("client_id", self.client_id.as_str()), ("scope", scope)])
+            .send()
+            .await?
+            .error_for_status()?;
+        Ok(resp.json().await?)
+    }
+
+    /// Poll once for the access token (device flow needs no client secret).
+    pub(crate) async fn poll_token(&self, device_code: &str) -> Result<PollResult> {
+        let resp = self
+            .http
+            .post(&self.endpoints.access_token_url)
+            .header(reqwest::header::ACCEPT, "application/json")
+            .form(&[
+                ("client_id", self.client_id.as_str()),
+                ("device_code", device_code),
+                ("grant_type", DEVICE_GRANT),
+            ])
+            .send()
+            .await?;
+        let body: serde_json::Value = resp.json().await?;
+        if let Some(token) = body.get("access_token").and_then(|v| v.as_str()) {
+            return Ok(PollResult::Authorized(token.to_string()));
+        }
+        match body.get("error").and_then(|v| v.as_str()) {
+            Some("authorization_pending") => Ok(PollResult::Pending),
+            Some("slow_down") => Ok(PollResult::SlowDown {
+                interval_secs: body.get("interval").and_then(|v| v.as_u64()),
+            }),
+            Some("expired_token") => Ok(PollResult::Expired),
+            Some("access_denied") => Ok(PollResult::Denied),
+            Some(other) => Err(AuthError::Github(other.to_string())),
+            None => Err(AuthError::Github("unexpected token response".to_string())),
+        }
+    }
+
+    /// Build the browser authorization URL for the web (authorization-code)
+    /// flow. `redirect_uri` is the backend's own public callback (which must
+    /// exactly match the OAuth app's registered Authorization callback URL);
+    /// `state` is the CSRF token GitHub echoes back.
+    pub(crate) fn authorize_url(&self, scope: &str, redirect_uri: &str, state: &str) -> String {
+        let query = url::form_urlencoded::Serializer::new(String::new())
+            .append_pair("client_id", &self.client_id)
+            .append_pair("redirect_uri", redirect_uri)
+            .append_pair("scope", scope)
+            .append_pair("state", state)
+            .append_pair("allow_signup", "true")
+            .finish();
+        format!("{}?{query}", self.endpoints.authorize_url)
+    }
+
+    /// Exchange an authorization code for an access token (web flow). Unlike
+    /// the device flow this requires the OAuth app's `client_secret`, which
+    /// is held only on the backend.
+    pub(crate) async fn exchange_code(
+        &self,
+        client_secret: &str,
+        code: &str,
+        redirect_uri: &str,
+    ) -> Result<String> {
+        let resp = self
+            .http
+            .post(&self.endpoints.access_token_url)
+            .header(reqwest::header::ACCEPT, "application/json")
+            .form(&[
+                ("client_id", self.client_id.as_str()),
+                ("client_secret", client_secret),
+                ("code", code),
+                ("redirect_uri", redirect_uri),
+                ("grant_type", "authorization_code"),
+            ])
+            .send()
+            .await?;
+        let body: serde_json::Value = resp.json().await?;
+        if let Some(token) = body.get("access_token").and_then(|v| v.as_str()) {
+            return Ok(token.to_string());
+        }
+        let err = body
+            .get("error")
+            .and_then(|v| v.as_str())
+            .unwrap_or("unexpected token response");
+        Err(AuthError::Github(err.to_string()))
+    }
+
+    /// Fetch the authenticated user's id + login.
+    pub(crate) async fn fetch_user(&self, access_token: &str) -> Result<GhUser> {
+        let resp = self
+            .http
+            .get(&self.endpoints.user_url)
+            .header(reqwest::header::ACCEPT, "application/vnd.github+json")
+            .bearer_auth(access_token)
+            .send()
+            .await?
+            .error_for_status()?;
+        Ok(resp.json().await?)
+    }
+}

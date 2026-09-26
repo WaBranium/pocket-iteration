@@ -1,0 +1,3332 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart' as intl;
+
+import 'app_localizations_en.dart';
+import 'app_localizations_zh.dart';
+
+// ignore_for_file: type=lint
+
+/// Callers can lookup localized strings with an instance of AppLocalizations
+/// returned by `AppLocalizations.of(context)`.
+///
+/// Applications need to include `AppLocalizations.delegate()` in their app's
+/// `localizationDelegates` list, and the locales they support in the app's
+/// `supportedLocales` list. For example:
+///
+/// ```dart
+/// import 'gen/app_localizations.dart';
+///
+/// return MaterialApp(
+///   localizationsDelegates: AppLocalizations.localizationsDelegates,
+///   supportedLocales: AppLocalizations.supportedLocales,
+///   home: MyApplicationHome(),
+/// );
+/// ```
+///
+/// ## Update pubspec.yaml
+///
+/// Please make sure to update your pubspec.yaml to include the following
+/// packages:
+///
+/// ```yaml
+/// dependencies:
+///   # Internationalization support.
+///   flutter_localizations:
+///     sdk: flutter
+///   intl: any # Use the pinned version from flutter_localizations
+///
+///   # Rest of dependencies
+/// ```
+///
+/// ## iOS Applications
+///
+/// iOS applications define key application metadata, including supported
+/// locales, in an Info.plist file that is built into the application bundle.
+/// To configure the locales supported by your app, you’ll need to edit this
+/// file.
+///
+/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// Then, in the Project Navigator, open the Info.plist file under the Runner
+/// project’s Runner folder.
+///
+/// Next, select the Information Property List item, select Add Item from the
+/// Editor menu, then select Localizations from the pop-up menu.
+///
+/// Select and expand the newly-created Localizations item then, for each
+/// locale your application supports, add a new item and select the locale
+/// you wish to add from the pop-up menu in the Value field. This list should
+/// be consistent with the languages listed in the AppLocalizations.supportedLocales
+/// property.
+abstract class AppLocalizations {
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+
+  final String localeName;
+
+  static AppLocalizations of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
+  }
+
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
+
+  /// A list of this localizations delegate along with the default localizations
+  /// delegates.
+  ///
+  /// Returns a list of localizations delegates containing this delegate along with
+  /// GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate,
+  /// and GlobalWidgetsLocalizations.delegate.
+  ///
+  /// Additional delegates can be added by appending to this list in
+  /// MaterialApp. This list does not have to be used at all if a custom list
+  /// of delegates is preferred or required.
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
+
+  /// A list of this localizations delegate's supported locales.
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('zh'),
+  ];
+
+  /// No description provided for @appTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'PocketCodex'**
+  String get appTitle;
+
+  /// No description provided for @webUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'PocketCodex needs local network and file access; Web is not supported.\nUse Android / iOS / desktop.'**
+  String get webUnsupported;
+
+  /// No description provided for @onboardingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to a pb-mapper relay'**
+  String get onboardingTitle;
+
+  /// No description provided for @importFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'pcx1: share string (one-tap import)'**
+  String get importFieldLabel;
+
+  /// No description provided for @importButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get importButton;
+
+  /// No description provided for @relayFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'relay host:port'**
+  String get relayFieldLabel;
+
+  /// No description provided for @keyFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'MSG_HEADER_KEY (32 bytes)'**
+  String get keyFieldLabel;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @relayEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'relay address cannot be empty'**
+  String get relayEmpty;
+
+  /// No description provided for @keyLengthError.
+  ///
+  /// In en, this message translates to:
+  /// **'MSG_HEADER_KEY must be exactly 32 bytes'**
+  String get keyLengthError;
+
+  /// No description provided for @accountSignInTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get accountSignInTitle;
+
+  /// No description provided for @accountSignInButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with GitHub'**
+  String get accountSignInButton;
+
+  /// No description provided for @accountUseDeviceCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a device code instead'**
+  String get accountUseDeviceCode;
+
+  /// No description provided for @accountSessionExpiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session expired'**
+  String get accountSessionExpiredTitle;
+
+  /// No description provided for @accountSessionExpiredMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your saved sign-in can no longer be renewed. Sign in again to reconnect to your services.'**
+  String get accountSessionExpiredMessage;
+
+  /// No description provided for @accountSignInAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in again'**
+  String get accountSignInAgain;
+
+  /// No description provided for @accountWebFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in didn\'t complete. Please try again.'**
+  String get accountWebFailed;
+
+  /// No description provided for @accountWebTrouble.
+  ///
+  /// In en, this message translates to:
+  /// **'Browser sign-in didn\'t finish — either the GitHub page wouldn\'t load, or the browser couldn\'t hand the result back to this app. The device code below avoids the hand-off entirely.'**
+  String get accountWebTrouble;
+
+  /// No description provided for @accountSignedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in'**
+  String get accountSignedIn;
+
+  /// No description provided for @accountSignedInAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in as @{login}'**
+  String accountSignedInAs(String login);
+
+  /// No description provided for @accountEnterCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter this code on GitHub to finish signing in:'**
+  String get accountEnterCode;
+
+  /// No description provided for @accountCopyCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy code'**
+  String get accountCopyCode;
+
+  /// No description provided for @accountOpenGitHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Open GitHub'**
+  String get accountOpenGitHub;
+
+  /// No description provided for @accountWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for you to authorize on GitHub…'**
+  String get accountWaiting;
+
+  /// No description provided for @accountCodeExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'The code expired. Please try again.'**
+  String get accountCodeExpired;
+
+  /// No description provided for @accountDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in was denied on GitHub.'**
+  String get accountDenied;
+
+  /// No description provided for @accountAdvancedSelfHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a self-hosted relay instead'**
+  String get accountAdvancedSelfHost;
+
+  /// No description provided for @accountAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced / self-hosted'**
+  String get accountAdvanced;
+
+  /// No description provided for @accountBackendHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Backend URL (blank = default)'**
+  String get accountBackendHint;
+
+  /// No description provided for @accountSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get accountSection;
+
+  /// No description provided for @accountSignOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get accountSignOut;
+
+  /// No description provided for @connecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting…'**
+  String get connecting;
+
+  /// No description provided for @conversationsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversations'**
+  String get conversationsSection;
+
+  /// No description provided for @newConversation.
+  ///
+  /// In en, this message translates to:
+  /// **'New conversation'**
+  String get newConversation;
+
+  /// No description provided for @noThreads.
+  ///
+  /// In en, this message translates to:
+  /// **'No conversations yet'**
+  String get noThreads;
+
+  /// No description provided for @untitledThread.
+  ///
+  /// In en, this message translates to:
+  /// **'(untitled)'**
+  String get untitledThread;
+
+  /// No description provided for @renameConversation.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get renameConversation;
+
+  /// No description provided for @renameConversationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation name'**
+  String get renameConversationHint;
+
+  /// No description provided for @renameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Click to rename'**
+  String get renameHint;
+
+  /// No description provided for @retryingAttempt.
+  ///
+  /// In en, this message translates to:
+  /// **'Retrying… {attempt}/{max}'**
+  String retryingAttempt(int attempt, int max);
+
+  /// No description provided for @renameFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t rename the conversation'**
+  String get renameFailed;
+
+  /// No description provided for @showMoreCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Show {count} more'**
+  String showMoreCount(int count);
+
+  /// No description provided for @showLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get showLess;
+
+  /// No description provided for @messageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Message…'**
+  String get messageHint;
+
+  /// No description provided for @send.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get send;
+
+  /// No description provided for @voiceLive.
+  ///
+  /// In en, this message translates to:
+  /// **'Live voice'**
+  String get voiceLive;
+
+  /// No description provided for @voiceSessionEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Live voice · ended'**
+  String get voiceSessionEnded;
+
+  /// No description provided for @voiceYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get voiceYou;
+
+  /// No description provided for @voiceAgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Agent'**
+  String get voiceAgent;
+
+  /// No description provided for @addAttachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get addAttachment;
+
+  /// No description provided for @turnSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn settings'**
+  String get turnSettings;
+
+  /// No description provided for @prevTurn.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous turn'**
+  String get prevTurn;
+
+  /// No description provided for @nextTurn.
+  ///
+  /// In en, this message translates to:
+  /// **'Next turn'**
+  String get nextTurn;
+
+  /// No description provided for @jumpToLatest.
+  ///
+  /// In en, this message translates to:
+  /// **'Jump to latest'**
+  String get jumpToLatest;
+
+  /// No description provided for @attachImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach image'**
+  String get attachImage;
+
+  /// No description provided for @removeImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove image'**
+  String get removeImage;
+
+  /// No description provided for @imagePickFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t read the selected image'**
+  String get imagePickFailed;
+
+  /// No description provided for @imageTooMany.
+  ///
+  /// In en, this message translates to:
+  /// **'At most {count} images per message'**
+  String imageTooMany(int count);
+
+  /// No description provided for @imageSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save image'**
+  String get imageSave;
+
+  /// No description provided for @previewImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Click to preview'**
+  String get previewImage;
+
+  /// No description provided for @imageLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load this image'**
+  String get imageLoadFailed;
+
+  /// No description provided for @imageSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to {path}'**
+  String imageSaved(String path);
+
+  /// No description provided for @imageSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the image: {error}'**
+  String imageSaveFailed(String error);
+
+  /// No description provided for @imageOnHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Image file on the host machine: {path}'**
+  String imageOnHost(String path);
+
+  /// No description provided for @imageOnlyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'[Image]'**
+  String get imageOnlyMessage;
+
+  /// No description provided for @attachFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach file'**
+  String get attachFile;
+
+  /// No description provided for @dropToAttach.
+  ///
+  /// In en, this message translates to:
+  /// **'Drop to attach'**
+  String get dropToAttach;
+
+  /// No description provided for @queuedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 message queued} other{{count} messages queued}}'**
+  String queuedCount(int count);
+
+  /// No description provided for @queuedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Sends after the current reply. Esc puts the last one back.'**
+  String get queuedHint;
+
+  /// No description provided for @removeQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from queue'**
+  String get removeQueued;
+
+  /// No description provided for @removeFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove file'**
+  String get removeFile;
+
+  /// No description provided for @filePickFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t read the selected file'**
+  String get filePickFailed;
+
+  /// No description provided for @fileTooMany.
+  ///
+  /// In en, this message translates to:
+  /// **'At most {count} files per message'**
+  String fileTooMany(int count);
+
+  /// No description provided for @fileTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'File exceeds the {mb} MB limit'**
+  String fileTooLarge(int mb);
+
+  /// No description provided for @fileUploadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t upload the file to the host'**
+  String get fileUploadFailed;
+
+  /// No description provided for @fileOnlyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'[File]'**
+  String get fileOnlyMessage;
+
+  /// No description provided for @interrupt.
+  ///
+  /// In en, this message translates to:
+  /// **'Interrupt'**
+  String get interrupt;
+
+  /// No description provided for @thinking.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking…'**
+  String get thinking;
+
+  /// No description provided for @emptyConversation.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a message to start the conversation'**
+  String get emptyConversation;
+
+  /// Leading row of a long conversation whose earlier history hasn't been loaded yet; scrolling to it fetches the previous page.
+  ///
+  /// In en, this message translates to:
+  /// **'Load earlier messages'**
+  String get olderHistoryHint;
+
+  /// No description provided for @historyStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start of conversation'**
+  String get historyStart;
+
+  /// No description provided for @historyLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading history…'**
+  String get historyLoading;
+
+  /// No description provided for @historyRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t load history. Retry'**
+  String get historyRetry;
+
+  /// No description provided for @turnFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn didn\'t finish — the connection dropped or the remote codex failed. Retry, or check codex on the host machine (it may need to be logged in again).'**
+  String get turnFailed;
+
+  /// Shown when an embedded (in-process) codex turn fails because the OS sandbox helpers aren't available; guides the user to the no-sandbox Full mode or an external host.
+  ///
+  /// In en, this message translates to:
+  /// **'This built-in (自带) session can\'t start its command sandbox, so the agent can\'t run commands or read files here. Switch to \"Full access\" mode to run without a sandbox, or connect to an external/remote codex host.'**
+  String get sandboxHelperUnavailable;
+
+  /// No description provided for @disconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect'**
+  String get disconnect;
+
+  /// No description provided for @connectionLost.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection lost'**
+  String get connectionLost;
+
+  /// No description provided for @reconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnect'**
+  String get reconnect;
+
+  /// No description provided for @projectsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Projects'**
+  String get projectsSection;
+
+  /// No description provided for @newProject.
+  ///
+  /// In en, this message translates to:
+  /// **'New project'**
+  String get newProject;
+
+  /// No description provided for @effortFaster.
+  ///
+  /// In en, this message translates to:
+  /// **'Faster'**
+  String get effortFaster;
+
+  /// No description provided for @effortSmarter.
+  ///
+  /// In en, this message translates to:
+  /// **'Smarter'**
+  String get effortSmarter;
+
+  /// No description provided for @searchProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Search projects'**
+  String get searchProjects;
+
+  /// No description provided for @noMatchingProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching projects'**
+  String get noMatchingProjects;
+
+  /// No description provided for @workOutsideProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Work outside a project'**
+  String get workOutsideProject;
+
+  /// No description provided for @switchProjectTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch project'**
+  String get switchProjectTip;
+
+  /// No description provided for @newSessionTitleIn.
+  ///
+  /// In en, this message translates to:
+  /// **'What should we build in {project}?'**
+  String newSessionTitleIn(String project);
+
+  /// No description provided for @remotePathLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Remote folder path (on the host)'**
+  String get remotePathLabel;
+
+  /// No description provided for @remotePathHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. /home/ubuntu/myproject — blank uses the host default'**
+  String get remotePathHint;
+
+  /// No description provided for @model.
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get model;
+
+  /// No description provided for @modelDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Default model'**
+  String get modelDefault;
+
+  /// No description provided for @defaultFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Default folder'**
+  String get defaultFolder;
+
+  /// No description provided for @permissionMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission'**
+  String get permissionMode;
+
+  /// No description provided for @modeReadOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Read-only'**
+  String get modeReadOnly;
+
+  /// No description provided for @modeReadOnlyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask before running; no file writes'**
+  String get modeReadOnlyDesc;
+
+  /// No description provided for @modeAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get modeAuto;
+
+  /// No description provided for @modeAutoDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Let Codex review approval requests for you, within the workspace sandbox.'**
+  String get modeAutoDesc;
+
+  /// No description provided for @modeFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full access'**
+  String get modeFull;
+
+  /// No description provided for @modeFullDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'No sandbox, never ask (use with care)'**
+  String get modeFullDesc;
+
+  /// No description provided for @approvalPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'The agent wants to run a command'**
+  String get approvalPrompt;
+
+  /// No description provided for @approvalFilePrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'The agent wants to edit files'**
+  String get approvalFilePrompt;
+
+  /// No description provided for @approvalPermissionPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'The agent requests additional permission'**
+  String get approvalPermissionPrompt;
+
+  /// No description provided for @approve.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get approve;
+
+  /// No description provided for @approveForSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve for session'**
+  String get approveForSession;
+
+  /// No description provided for @deny.
+  ///
+  /// In en, this message translates to:
+  /// **'Deny'**
+  String get deny;
+
+  /// No description provided for @userInputTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The agent needs your input'**
+  String get userInputTitle;
+
+  /// No description provided for @userInputSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get userInputSubmit;
+
+  /// No description provided for @userInputOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other…'**
+  String get userInputOther;
+
+  /// No description provided for @planMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan'**
+  String get planMode;
+
+  /// No description provided for @planReadyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan ready'**
+  String get planReadyTitle;
+
+  /// No description provided for @implementPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Implement plan'**
+  String get implementPlan;
+
+  /// No description provided for @keepPlanning.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep planning'**
+  String get keepPlanning;
+
+  /// No description provided for @implementPlanPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Go ahead and implement the plan above.'**
+  String get implementPlanPrompt;
+
+  /// No description provided for @noModelForMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t switch mode: no model is available'**
+  String get noModelForMode;
+
+  /// No description provided for @effort.
+  ///
+  /// In en, this message translates to:
+  /// **'Effort'**
+  String get effort;
+
+  /// No description provided for @effortMinimal.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimal'**
+  String get effortMinimal;
+
+  /// No description provided for @effortMinimalDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Least thinking, fastest'**
+  String get effortMinimalDesc;
+
+  /// No description provided for @effortLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get effortLow;
+
+  /// No description provided for @effortLowDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'A little thinking'**
+  String get effortLowDesc;
+
+  /// No description provided for @effortMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get effortMedium;
+
+  /// No description provided for @effortMediumDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Balanced (usual default)'**
+  String get effortMediumDesc;
+
+  /// No description provided for @effortHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get effortHigh;
+
+  /// No description provided for @effortHighDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Thorough'**
+  String get effortHighDesc;
+
+  /// No description provided for @effortXhigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Extra high'**
+  String get effortXhigh;
+
+  /// No description provided for @effortXhighDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Most thorough, slowest'**
+  String get effortXhighDesc;
+
+  /// No description provided for @linkOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the link'**
+  String get linkOpenFailed;
+
+  /// No description provided for @contextLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Context'**
+  String get contextLabel;
+
+  /// No description provided for @contextUsageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Context & usage'**
+  String get contextUsageTitle;
+
+  /// No description provided for @quota5h.
+  ///
+  /// In en, this message translates to:
+  /// **'5-hour limit'**
+  String get quota5h;
+
+  /// No description provided for @quotaWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly limit'**
+  String get quotaWeekly;
+
+  /// No description provided for @quotaUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Quota information is unavailable.'**
+  String get quotaUnavailable;
+
+  /// No description provided for @quotaRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage left'**
+  String get quotaRemaining;
+
+  /// No description provided for @resetsIn.
+  ///
+  /// In en, this message translates to:
+  /// **'resets in {span}'**
+  String resetsIn(String span);
+
+  /// No description provided for @moreActions.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get moreActions;
+
+  /// No description provided for @backToSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to sessions'**
+  String get backToSessions;
+
+  /// No description provided for @stateReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get stateReady;
+
+  /// No description provided for @stateWorking.
+  ///
+  /// In en, this message translates to:
+  /// **'Working…'**
+  String get stateWorking;
+
+  /// No description provided for @statePlanning.
+  ///
+  /// In en, this message translates to:
+  /// **'Planning…'**
+  String get statePlanning;
+
+  /// No description provided for @statePlanMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan mode'**
+  String get statePlanMode;
+
+  /// No description provided for @stateDisconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnected'**
+  String get stateDisconnected;
+
+  /// No description provided for @stateReconnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnecting…'**
+  String get stateReconnecting;
+
+  /// No description provided for @compactingContext.
+  ///
+  /// In en, this message translates to:
+  /// **'Compacting context…'**
+  String get compactingContext;
+
+  /// No description provided for @compacted.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation compacted'**
+  String get compacted;
+
+  /// No description provided for @turnStopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped'**
+  String get turnStopped;
+
+  /// No description provided for @turnElapsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Took {duration}'**
+  String turnElapsed(String duration);
+
+  /// Collapsed header for a turn's tool calls and reasoning.
+  ///
+  /// In en, this message translates to:
+  /// **'Worked for {duration}'**
+  String turnProcessed(String duration);
+
+  /// Same header while the turn is still running, when no duration exists yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Working, {count} steps so far'**
+  String turnProcessing(int count);
+
+  /// No description provided for @turnActivityCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} steps'**
+  String turnActivityCount(int count);
+
+  /// No description provided for @completedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed at {time}'**
+  String completedAt(String time);
+
+  /// No description provided for @activeModelTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Active model & settings — tap for details'**
+  String get activeModelTooltip;
+
+  /// No description provided for @runtimeSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Runtime configuration'**
+  String get runtimeSheetTitle;
+
+  /// No description provided for @runtimeEffortModelDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Model default'**
+  String get runtimeEffortModelDefault;
+
+  /// No description provided for @runtimeCollabDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get runtimeCollabDefault;
+
+  /// No description provided for @runtimeConfirmedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed by the server · {time}'**
+  String runtimeConfirmedAt(String time);
+
+  /// No description provided for @runtimeFromSnapshot.
+  ///
+  /// In en, this message translates to:
+  /// **'From the server\'s session snapshot · {time}'**
+  String runtimeFromSnapshot(String time);
+
+  /// No description provided for @runtimeUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This server doesn\'t report runtime settings; showing what the app sends.'**
+  String get runtimeUnavailable;
+
+  /// No description provided for @runtimeConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed by the server'**
+  String get runtimeConfirmed;
+
+  /// No description provided for @runtimeUnconfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'As sent by the app — the server didn\'t report back'**
+  String get runtimeUnconfirmed;
+
+  /// No description provided for @turnHandledBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Handled by {model}'**
+  String turnHandledBy(String model);
+
+  /// No description provided for @modelReroutedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'The server switched to this model mid-turn'**
+  String get modelReroutedNote;
+
+  /// No description provided for @refreshStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh status'**
+  String get refreshStatus;
+
+  /// No description provided for @statusOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get statusOnline;
+
+  /// No description provided for @statusConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get statusConnected;
+
+  /// No description provided for @statusChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking…'**
+  String get statusChecking;
+
+  /// No description provided for @statusUnreachable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unreachable'**
+  String get statusUnreachable;
+
+  /// No description provided for @unreachableReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Still registered on the relay, but the remote app-server isn\'t responding — it may not be running, or has crashed.'**
+  String get unreachableReason;
+
+  /// No description provided for @unreachableAuthRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'The relay refused the connection: the authentication code is missing or no longer valid. The tunnel itself works and the remote host is not down — sign in again, or re-enter the relay key, under Manage services.'**
+  String get unreachableAuthRejected;
+
+  /// No description provided for @unreachableSilent.
+  ///
+  /// In en, this message translates to:
+  /// **'The tunnel is up, but the remote app-server didn\'t answer before the timeout — it may still be starting, wedged, or gone.'**
+  String get unreachableSilent;
+
+  /// No description provided for @apiUnreachableReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Still registered on the relay, but the remote API service isn\'t responding — it may not be running, or has crashed.'**
+  String get apiUnreachableReason;
+
+  /// No description provided for @subscribedAlive.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribed'**
+  String get subscribedAlive;
+
+  /// No description provided for @subscribedDead.
+  ///
+  /// In en, this message translates to:
+  /// **'Dropped'**
+  String get subscribedDead;
+
+  /// No description provided for @compact.
+  ///
+  /// In en, this message translates to:
+  /// **'Compact conversation'**
+  String get compact;
+
+  /// No description provided for @compactConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Summarise and shrink this conversation to free up context? This can\'t be undone.'**
+  String get compactConfirm;
+
+  /// No description provided for @viewDiff.
+  ///
+  /// In en, this message translates to:
+  /// **'View changes'**
+  String get viewDiff;
+
+  /// No description provided for @cancelDiffLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel loading changes'**
+  String get cancelDiffLoad;
+
+  /// No description provided for @changesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes'**
+  String get changesTitle;
+
+  /// No description provided for @noChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'No changes vs the main branch.'**
+  String get noChanges;
+
+  /// No description provided for @envTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Environment'**
+  String get envTitle;
+
+  /// No description provided for @envLocal.
+  ///
+  /// In en, this message translates to:
+  /// **'Local'**
+  String get envLocal;
+
+  /// No description provided for @envProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Project'**
+  String get envProject;
+
+  /// No description provided for @envSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Source'**
+  String get envSource;
+
+  /// No description provided for @envRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get envRefresh;
+
+  /// No description provided for @diffTruncated.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} more lines not shown — copy the path to view the full diff'**
+  String diffTruncated(int count);
+
+  /// No description provided for @diffUnmodified.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} unmodified lines'**
+  String diffUnmodified(int count);
+
+  /// No description provided for @diffExpandFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} unmodified lines (couldn\'t load)'**
+  String diffExpandFailed(int count);
+
+  /// No description provided for @reviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get reviewTitle;
+
+  /// No description provided for @reviewNoFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'No changed files.'**
+  String get reviewNoFiles;
+
+  /// No description provided for @reviewPickFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a file to review its changes.'**
+  String get reviewPickFile;
+
+  /// No description provided for @envFilesChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} files changed'**
+  String envFilesChanged(int count);
+
+  /// No description provided for @turnProgressStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current} of {total}'**
+  String turnProgressStep(int current, int total);
+
+  /// No description provided for @start.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get start;
+
+  /// No description provided for @create.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get create;
+
+  /// No description provided for @copy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get copy;
+
+  /// No description provided for @copied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied'**
+  String get copied;
+
+  /// No description provided for @toolSearched.
+  ///
+  /// In en, this message translates to:
+  /// **'Searched the web'**
+  String get toolSearched;
+
+  /// No description provided for @toolRan.
+  ///
+  /// In en, this message translates to:
+  /// **'Ran command'**
+  String get toolRan;
+
+  /// No description provided for @toolEdited.
+  ///
+  /// In en, this message translates to:
+  /// **'Edited files'**
+  String get toolEdited;
+
+  /// No description provided for @toolCalled.
+  ///
+  /// In en, this message translates to:
+  /// **'Used a tool'**
+  String get toolCalled;
+
+  /// No description provided for @toolCollaborated.
+  ///
+  /// In en, this message translates to:
+  /// **'Coordinated agents'**
+  String get toolCollaborated;
+
+  /// No description provided for @toolSubAgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Subagent activity'**
+  String get toolSubAgent;
+
+  /// No description provided for @toolViewedImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Viewed image'**
+  String get toolViewedImage;
+
+  /// No description provided for @toolGeneratedImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Generated image'**
+  String get toolGeneratedImage;
+
+  /// No description provided for @toolWaited.
+  ///
+  /// In en, this message translates to:
+  /// **'Waited'**
+  String get toolWaited;
+
+  /// No description provided for @toolHook.
+  ///
+  /// In en, this message translates to:
+  /// **'Hook prompt'**
+  String get toolHook;
+
+  /// No description provided for @toolEnteredReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Entered review'**
+  String get toolEnteredReview;
+
+  /// No description provided for @toolExitedReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Exited review'**
+  String get toolExitedReview;
+
+  /// No description provided for @toolThinking.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking'**
+  String get toolThinking;
+
+  /// No description provided for @toolPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan'**
+  String get toolPlan;
+
+  /// No description provided for @toolActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get toolActivity;
+
+  /// No description provided for @relayNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'(no relay configured)'**
+  String get relayNotConfigured;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @discoverFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach the relay'**
+  String get discoverFailed;
+
+  /// No description provided for @localPortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Local port'**
+  String get localPortLabel;
+
+  /// No description provided for @startSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Start subscription'**
+  String get startSubscription;
+
+  /// No description provided for @stop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get stop;
+
+  /// No description provided for @portRangeError.
+  ///
+  /// In en, this message translates to:
+  /// **'Port must be an integer from 1 to 65535'**
+  String get portRangeError;
+
+  /// No description provided for @noAuthWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'⚠ The local endpoint has no auth and binds 127.0.0.1 only. Alive only while the app is foregrounded.'**
+  String get noAuthWarning;
+
+  /// No description provided for @subscribeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t start the subscription'**
+  String get subscribeFailed;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// No description provided for @utilityChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation'**
+  String get utilityChat;
+
+  /// No description provided for @utilityPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages'**
+  String get utilityPages;
+
+  /// No description provided for @utilitySwitchPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch page'**
+  String get utilitySwitchPage;
+
+  /// No description provided for @settingsGeneral.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get settingsGeneral;
+
+  /// No description provided for @settingsAccountConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Account & connection'**
+  String get settingsAccountConnection;
+
+  /// No description provided for @settingsServicesSubscriptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Services & subscriptions'**
+  String get settingsServicesSubscriptions;
+
+  /// No description provided for @settingsAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get settingsAdvanced;
+
+  /// No description provided for @settingsSelfHostedRelay.
+  ///
+  /// In en, this message translates to:
+  /// **'Self-hosted relay fallback'**
+  String get settingsSelfHostedRelay;
+
+  /// No description provided for @settingsSelfHostedKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Self-hosted relay key'**
+  String get settingsSelfHostedKey;
+
+  /// No description provided for @settingsExportUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure a self-hosted relay and 32-byte key first.'**
+  String get settingsExportUnavailable;
+
+  /// No description provided for @settingsOperationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Operation failed: {error}'**
+  String settingsOperationFailed(String error);
+
+  /// No description provided for @settingsDiagnostics.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostics'**
+  String get settingsDiagnostics;
+
+  /// No description provided for @settingsConfigure.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure'**
+  String get settingsConfigure;
+
+  /// No description provided for @settingsEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get settingsEdit;
+
+  /// No description provided for @trayShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Show window'**
+  String get trayShow;
+
+  /// No description provided for @trayQuit.
+  ///
+  /// In en, this message translates to:
+  /// **'Quit'**
+  String get trayQuit;
+
+  /// No description provided for @windowMinimize.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimize'**
+  String get windowMinimize;
+
+  /// No description provided for @windowMaximize.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximize'**
+  String get windowMaximize;
+
+  /// No description provided for @windowRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get windowRestore;
+
+  /// No description provided for @windowClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get windowClose;
+
+  /// No description provided for @relayRow.
+  ///
+  /// In en, this message translates to:
+  /// **'relay'**
+  String get relayRow;
+
+  /// No description provided for @notConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'(not configured)'**
+  String get notConfigured;
+
+  /// No description provided for @keyRow.
+  ///
+  /// In en, this message translates to:
+  /// **'MSG_HEADER_KEY'**
+  String get keyRow;
+
+  /// No description provided for @keySet.
+  ///
+  /// In en, this message translates to:
+  /// **'•••••••• (set)'**
+  String get keySet;
+
+  /// No description provided for @keyNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'(not set)'**
+  String get keyNotSet;
+
+  /// No description provided for @activeSubscriptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Active subscriptions'**
+  String get activeSubscriptions;
+
+  /// No description provided for @none.
+  ///
+  /// In en, this message translates to:
+  /// **'(none)'**
+  String get none;
+
+  /// No description provided for @exportShareString.
+  ///
+  /// In en, this message translates to:
+  /// **'Export pcx1: share string'**
+  String get exportShareString;
+
+  /// No description provided for @copiedShareString.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied pcx1: share string'**
+  String get copiedShareString;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @languageSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow system'**
+  String get languageSystem;
+
+  /// No description provided for @languageChinese.
+  ///
+  /// In en, this message translates to:
+  /// **'简体中文'**
+  String get languageChinese;
+
+  /// No description provided for @languageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// No description provided for @appearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get appearance;
+
+  /// No description provided for @appearanceSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow system'**
+  String get appearanceSystem;
+
+  /// No description provided for @appearanceLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get appearanceLight;
+
+  /// No description provided for @appearanceDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get appearanceDark;
+
+  /// No description provided for @newSessionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What should we build?'**
+  String get newSessionTitle;
+
+  /// No description provided for @newSessionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a starting point, or just type your task below.'**
+  String get newSessionSubtitle;
+
+  /// No description provided for @suggestExploreTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore the project'**
+  String get suggestExploreTitle;
+
+  /// No description provided for @suggestExplorePrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Give me an overview of this project — its structure, main modules, and tech stack.'**
+  String get suggestExplorePrompt;
+
+  /// No description provided for @suggestTestsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Run & fix tests'**
+  String get suggestTestsTitle;
+
+  /// No description provided for @suggestTestsPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Run the test suite and fix any failing tests.'**
+  String get suggestTestsPrompt;
+
+  /// No description provided for @suggestDiffTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review changes'**
+  String get suggestDiffTitle;
+
+  /// No description provided for @suggestDiffPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Summarize the current working-tree changes against the main branch.'**
+  String get suggestDiffPrompt;
+
+  /// No description provided for @suggestPlanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan a feature'**
+  String get suggestPlanTitle;
+
+  /// No description provided for @suggestPlanPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Help me plan out a new feature before writing any code.'**
+  String get suggestPlanPrompt;
+
+  /// No description provided for @searchConversations.
+  ///
+  /// In en, this message translates to:
+  /// **'Search conversations'**
+  String get searchConversations;
+
+  /// No description provided for @searchLocalSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Search content / path / source'**
+  String get searchLocalSessions;
+
+  /// No description provided for @noMatchingThreads.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching conversations'**
+  String get noMatchingThreads;
+
+  /// No description provided for @groupActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get groupActive;
+
+  /// No description provided for @groupToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get groupToday;
+
+  /// No description provided for @groupYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get groupYesterday;
+
+  /// No description provided for @groupEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier'**
+  String get groupEarlier;
+
+  /// No description provided for @activityView.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get activityView;
+
+  /// No description provided for @running.
+  ///
+  /// In en, this message translates to:
+  /// **'Running…'**
+  String get running;
+
+  /// No description provided for @timeJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get timeJustNow;
+
+  /// No description provided for @timeMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}m ago'**
+  String timeMinutesAgo(int n);
+
+  /// No description provided for @timeHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}h ago'**
+  String timeHoursAgo(int n);
+
+  /// No description provided for @timeYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'yesterday'**
+  String get timeYesterday;
+
+  /// No description provided for @timeDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}d ago'**
+  String timeDaysAgo(int n);
+
+  /// No description provided for @modelLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get modelLabel;
+
+  /// No description provided for @permissionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission'**
+  String get permissionLabel;
+
+  /// No description provided for @localSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Local sessions'**
+  String get localSessions;
+
+  /// No description provided for @localSessionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Local sessions'**
+  String get localSessionsTitle;
+
+  /// No description provided for @noLocalSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'No local sessions'**
+  String get noLocalSessions;
+
+  /// No description provided for @sessionResumable.
+  ///
+  /// In en, this message translates to:
+  /// **'Resumable'**
+  String get sessionResumable;
+
+  /// No description provided for @sessionUnfinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Last turn interrupted'**
+  String get sessionUnfinished;
+
+  /// No description provided for @sessionRunningElsewhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Running elsewhere'**
+  String get sessionRunningElsewhere;
+
+  /// No description provided for @sessionInUseElsewhere.
+  ///
+  /// In en, this message translates to:
+  /// **'In use elsewhere'**
+  String get sessionInUseElsewhere;
+
+  /// No description provided for @sessionReadOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Read-only'**
+  String get sessionReadOnly;
+
+  /// No description provided for @readOnlyViewing.
+  ///
+  /// In en, this message translates to:
+  /// **'Read-only — another client is using this session'**
+  String get readOnlyViewing;
+
+  /// No description provided for @sessionTranscriptEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to show yet'**
+  String get sessionTranscriptEmpty;
+
+  /// No description provided for @resumeSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get resumeSession;
+
+  /// No description provided for @forceTakeover.
+  ///
+  /// In en, this message translates to:
+  /// **'Force takeover'**
+  String get forceTakeover;
+
+  /// No description provided for @takeoverTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Force takeover?'**
+  String get takeoverTitle;
+
+  /// No description provided for @takeoverBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This session is held open by {n} other process(es). PocketCodex will try to terminate them, then resume it here. Any unsaved work in those processes will be lost.'**
+  String takeoverBody(int n);
+
+  /// No description provided for @takeoverWillTerminate.
+  ///
+  /// In en, this message translates to:
+  /// **'Will terminate'**
+  String get takeoverWillTerminate;
+
+  /// No description provided for @takeoverConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Terminate & resume'**
+  String get takeoverConfirm;
+
+  /// No description provided for @takeoverResumed.
+  ///
+  /// In en, this message translates to:
+  /// **'Session resumed'**
+  String get takeoverResumed;
+
+  /// No description provided for @takeoverKilled.
+  ///
+  /// In en, this message translates to:
+  /// **'Terminated {n} process(es)'**
+  String takeoverKilled(int n);
+
+  /// No description provided for @takeoverStillHeld.
+  ///
+  /// In en, this message translates to:
+  /// **'Still held open — resumed anyway'**
+  String get takeoverStillHeld;
+
+  /// No description provided for @takeoverResumeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume failed: {error}'**
+  String takeoverResumeFailed(String error);
+
+  /// No description provided for @takeoverNoTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to an app-server service first to resume.'**
+  String get takeoverNoTarget;
+
+  /// No description provided for @holderRow.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} · PID {pid}'**
+  String holderRow(String name, int pid);
+
+  /// No description provided for @localHostingSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Local hosting'**
+  String get localHostingSection;
+
+  /// No description provided for @localHostRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Hosting'**
+  String get localHostRunning;
+
+  /// No description provided for @localHostStarting.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting…'**
+  String get localHostStarting;
+
+  /// No description provided for @localHostUnresponsive.
+  ///
+  /// In en, this message translates to:
+  /// **'Not responding'**
+  String get localHostUnresponsive;
+
+  /// No description provided for @startHosting.
+  ///
+  /// In en, this message translates to:
+  /// **'Start hosting'**
+  String get startHosting;
+
+  /// No description provided for @stopHosting.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop hosting'**
+  String get stopHosting;
+
+  /// No description provided for @localHostPort.
+  ///
+  /// In en, this message translates to:
+  /// **'Port'**
+  String get localHostPort;
+
+  /// No description provided for @localHostName.
+  ///
+  /// In en, this message translates to:
+  /// **'Instance name'**
+  String get localHostName;
+
+  /// No description provided for @codexBinaryPath.
+  ///
+  /// In en, this message translates to:
+  /// **'codex binary path'**
+  String get codexBinaryPath;
+
+  /// No description provided for @codexNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'codex wasn\'t found on PATH — enter its full path below, or install it and tap Re-detect.'**
+  String get codexNotFound;
+
+  /// No description provided for @codexRedetect.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-detect'**
+  String get codexRedetect;
+
+  /// No description provided for @codexSourceExternal.
+  ///
+  /// In en, this message translates to:
+  /// **'External Codex'**
+  String get codexSourceExternal;
+
+  /// No description provided for @codexSourceBuiltin.
+  ///
+  /// In en, this message translates to:
+  /// **'Built-in engine'**
+  String get codexSourceBuiltin;
+
+  /// No description provided for @codexBuiltinNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Not implemented yet. Use external Codex.'**
+  String get codexBuiltinNote;
+
+  /// No description provided for @hostRuntimeInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Runtime'**
+  String get hostRuntimeInfo;
+
+  /// No description provided for @hostRuntimeMode.
+  ///
+  /// In en, this message translates to:
+  /// **'codex'**
+  String get hostRuntimeMode;
+
+  /// No description provided for @hostCodexVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get hostCodexVersion;
+
+  /// No description provided for @hostCodexPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Path'**
+  String get hostCodexPath;
+
+  /// No description provided for @hostProxyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Proxy'**
+  String get hostProxyLabel;
+
+  /// No description provided for @hostProxyInherit.
+  ///
+  /// In en, this message translates to:
+  /// **'inherits the app\'s environment'**
+  String get hostProxyInherit;
+
+  /// No description provided for @localHostDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Host a local app-server'**
+  String get localHostDialogTitle;
+
+  /// No description provided for @localHostHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Runs codex on this machine and registers it to your account, so your other devices can drive it.'**
+  String get localHostHint;
+
+  /// No description provided for @localHostListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening on {addr}'**
+  String localHostListening(String addr);
+
+  /// No description provided for @codexFoundAt.
+  ///
+  /// In en, this message translates to:
+  /// **'codex found: {path}'**
+  String codexFoundAt(String path);
+
+  /// No description provided for @chooseCodexPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose codex binary…'**
+  String get chooseCodexPath;
+
+  /// No description provided for @codexPathRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the codex binary to continue.'**
+  String get codexPathRequired;
+
+  /// No description provided for @useProxy.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a proxy'**
+  String get useProxy;
+
+  /// No description provided for @proxyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Proxy'**
+  String get proxyLabel;
+
+  /// No description provided for @proxyRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a proxy, or turn off “Use a proxy”.'**
+  String get proxyRequired;
+
+  /// No description provided for @noProxyWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Without a proxy, codex on this machine may fail to reach chatgpt.com.'**
+  String get noProxyWarning;
+
+  /// No description provided for @addLocalHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Host another…'**
+  String get addLocalHost;
+
+  /// No description provided for @customizeCodexPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Change path'**
+  String get customizeCodexPath;
+
+  /// No description provided for @deregister.
+  ///
+  /// In en, this message translates to:
+  /// **'Deregister'**
+  String get deregister;
+
+  /// No description provided for @reregister.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-register'**
+  String get reregister;
+
+  /// No description provided for @deregisterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deregister this service?'**
+  String get deregisterTitle;
+
+  /// No description provided for @deregisterWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove “{name}” from your account\'s relay listing. If a host is still running it, it will re-register within seconds — stop that host to remove it for good.'**
+  String deregisterWarning(String name);
+
+  /// No description provided for @deregisterLocalWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Take “{name}” off the relay. codex and the API proxy keep running — re-register it from the Local hosting card anytime.'**
+  String deregisterLocalWarning(String name);
+
+  /// No description provided for @deregisterOrphanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this unreachable service?'**
+  String get deregisterOrphanTitle;
+
+  /// No description provided for @deregisterOrphanWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'“{name}” isn\'t responding — its registration is lingering on the relay with no reachable host. This removes it from your list (and keeps it hidden even if the stale registration lingers), and asks the backend to drop it.'**
+  String deregisterOrphanWarning(String name);
+
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// No description provided for @deregisterFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t deregister the service'**
+  String get deregisterFailed;
+
+  /// No description provided for @hostNameConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'This server name is already online from another instance. Stop that instance first, or host under a different name. (A just-stopped server frees its name within ~15 seconds.)'**
+  String get hostNameConflict;
+
+  /// No description provided for @batchRemoveEnter.
+  ///
+  /// In en, this message translates to:
+  /// **'Clean up unreachable'**
+  String get batchRemoveEnter;
+
+  /// No description provided for @batchRemoveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove these unreachable services?'**
+  String get batchRemoveTitle;
+
+  /// No description provided for @batchRemoveWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {count} unreachable services from this device\'s list. Any that recover will re-appear.'**
+  String batchRemoveWarning(int count);
+
+  /// No description provided for @batchRemovedSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed {count} services'**
+  String batchRemovedSnack(int count);
+
+  /// No description provided for @tunnelAppLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'App-server'**
+  String get tunnelAppLabel;
+
+  /// No description provided for @tunnelApiLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'API'**
+  String get tunnelApiLabel;
+
+  /// No description provided for @tunnelOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline'**
+  String get tunnelOffline;
+
+  /// No description provided for @logsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Runtime logs'**
+  String get logsTitle;
+
+  /// No description provided for @logsLive.
+  ///
+  /// In en, this message translates to:
+  /// **'Live capture'**
+  String get logsLive;
+
+  /// No description provided for @logsLevelAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get logsLevelAll;
+
+  /// No description provided for @logsKeywordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'error, host, tunnel…'**
+  String get logsKeywordHint;
+
+  /// No description provided for @logsCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy visible logs'**
+  String get logsCopy;
+
+  /// No description provided for @logsClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear logs'**
+  String get logsClear;
+
+  /// No description provided for @logsScrollBottom.
+  ///
+  /// In en, this message translates to:
+  /// **'Scroll to bottom'**
+  String get logsScrollBottom;
+
+  /// No description provided for @logsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No logs yet'**
+  String get logsEmpty;
+
+  /// No description provided for @logsVisible.
+  ///
+  /// In en, this message translates to:
+  /// **'{visible}/{total} shown'**
+  String logsVisible(int visible, int total);
+
+  /// No description provided for @logsCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied {count} log lines'**
+  String logsCopied(int count);
+
+  /// No description provided for @manageServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage services'**
+  String get manageServices;
+
+  /// No description provided for @servicesHostThisDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Host this device'**
+  String get servicesHostThisDevice;
+
+  /// No description provided for @servicesDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Devices'**
+  String get servicesDevices;
+
+  /// No description provided for @servicesDeviceCapabilityCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} capabilities'**
+  String servicesDeviceCapabilityCount(int count);
+
+  /// No description provided for @servicesLocalDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'This device'**
+  String get servicesLocalDevice;
+
+  /// No description provided for @servicesCapabilities.
+  ///
+  /// In en, this message translates to:
+  /// **'Available capabilities'**
+  String get servicesCapabilities;
+
+  /// No description provided for @servicesChatCapability.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation service'**
+  String get servicesChatCapability;
+
+  /// No description provided for @servicesApiCapability.
+  ///
+  /// In en, this message translates to:
+  /// **'Responses API'**
+  String get servicesApiCapability;
+
+  /// No description provided for @servicesSessionsCapability.
+  ///
+  /// In en, this message translates to:
+  /// **'Session sharing'**
+  String get servicesSessionsCapability;
+
+  /// No description provided for @servicesDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get servicesDefault;
+
+  /// No description provided for @servicesSetDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Set as default'**
+  String get servicesSetDefault;
+
+  /// No description provided for @servicesOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get servicesOpen;
+
+  /// No description provided for @servicesManage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get servicesManage;
+
+  /// No description provided for @servicesBrowse.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse'**
+  String get servicesBrowse;
+
+  /// No description provided for @servicesNoCapabilities.
+  ///
+  /// In en, this message translates to:
+  /// **'No capabilities are currently available on this device'**
+  String get servicesNoCapabilities;
+
+  /// No description provided for @hostSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Host session history'**
+  String get hostSessions;
+
+  /// No description provided for @homeConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting to your Codex host…'**
+  String get homeConnecting;
+
+  /// No description provided for @homeRestoringHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Restoring hosting…'**
+  String get homeRestoringHost;
+
+  /// No description provided for @homeNoServiceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No Codex host available'**
+  String get homeNoServiceTitle;
+
+  /// No description provided for @homeNoServiceDesktopHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Start hosting on this computer and the chat opens right here — your phone can connect to it too.'**
+  String get homeNoServiceDesktopHint;
+
+  /// No description provided for @homeNoServiceMobileHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Open PocketCodex on your computer and start hosting (app-server); this screen will enter the chat automatically.'**
+  String get homeNoServiceMobileHint;
+
+  /// No description provided for @homeNoServiceSelfHostHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Run `pocket-codex serve` on a machine with codex to publish an app-server on your relay, or sign in with an account to host from this app.'**
+  String get homeNoServiceSelfHostHint;
+
+  /// No description provided for @homeAutoRetryNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Keeps checking for hosts automatically.'**
+  String get homeAutoRetryNote;
+
+  /// No description provided for @switchServiceFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach that host — staying on the current one.'**
+  String get switchServiceFailed;
+
+  /// No description provided for @pickFolderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a project folder'**
+  String get pickFolderTitle;
+
+  /// No description provided for @useThisFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this folder'**
+  String get useThisFolder;
+
+  /// No description provided for @folderUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Up one level'**
+  String get folderUp;
+
+  /// No description provided for @folderPickerEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No sub-folders here'**
+  String get folderPickerEmpty;
+
+  /// No description provided for @folderPickerNoRoots.
+  ///
+  /// In en, this message translates to:
+  /// **'No project folders are configured on this host yet. Add them on the computer under hosting settings.'**
+  String get folderPickerNoRoots;
+
+  /// No description provided for @gitRepoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Git repository'**
+  String get gitRepoLabel;
+
+  /// No description provided for @hostFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Host files'**
+  String get hostFiles;
+
+  /// No description provided for @fileBrowserEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'This folder is empty'**
+  String get fileBrowserEmpty;
+
+  /// No description provided for @fileDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get fileDownload;
+
+  /// No description provided for @fileUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload'**
+  String get fileUpload;
+
+  /// No description provided for @fileDownloaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded to {path}'**
+  String fileDownloaded(Object path);
+
+  /// No description provided for @fileDownloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t download: {error}'**
+  String fileDownloadFailed(Object error);
+
+  /// No description provided for @fileUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded {name}'**
+  String fileUploaded(Object name);
+
+  /// No description provided for @hostFileUploadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t upload: {error}'**
+  String hostFileUploadFailed(Object error);
+
+  /// No description provided for @browseProjectFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse project folders'**
+  String get browseProjectFolder;
+
+  /// No description provided for @orEnterPathManually.
+  ///
+  /// In en, this message translates to:
+  /// **'Or enter a path manually:'**
+  String get orEnterPathManually;
+
+  /// No description provided for @projectFolders.
+  ///
+  /// In en, this message translates to:
+  /// **'Project folders'**
+  String get projectFolders;
+
+  /// No description provided for @projectFoldersHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Folders your phone can browse to start a session in. Star one to make it the default for new conversations.'**
+  String get projectFoldersHint;
+
+  /// No description provided for @noProjectFolders.
+  ///
+  /// In en, this message translates to:
+  /// **'No project folders yet.'**
+  String get noProjectFolders;
+
+  /// No description provided for @addProjectFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add folder'**
+  String get addProjectFolder;
+
+  /// No description provided for @defaultProjectFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Default folder'**
+  String get defaultProjectFolder;
+
+  /// No description provided for @setAsDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Set as default'**
+  String get setAsDefault;
+
+  /// No description provided for @removeProjectFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get removeProjectFolder;
+
+  /// No description provided for @welcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to PocketCodex'**
+  String get welcomeTitle;
+
+  /// No description provided for @welcomeSubtitleDesktop.
+  ///
+  /// In en, this message translates to:
+  /// **'One step left: start hosting on this computer, and your phone can drive its Codex from anywhere.'**
+  String get welcomeSubtitleDesktop;
+
+  /// No description provided for @welcomeSubtitleMobile.
+  ///
+  /// In en, this message translates to:
+  /// **'PocketCodex remote-controls the Codex running on your computer. Set up hosting there once and you\'re ready.'**
+  String get welcomeSubtitleMobile;
+
+  /// No description provided for @welcomeStepHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Start hosting on this computer'**
+  String get welcomeStepHost;
+
+  /// No description provided for @welcomeStepHostDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'One click brings up a codex app-server and publishes it to your account — the defaults just work.'**
+  String get welcomeStepHostDesc;
+
+  /// No description provided for @welcomeHostRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Hosting is up'**
+  String get welcomeHostRunning;
+
+  /// No description provided for @welcomeStepFolders.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure project folders (optional)'**
+  String get welcomeStepFolders;
+
+  /// No description provided for @welcomeStepFoldersDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phone browses these folders visually to start a session in the right project.'**
+  String get welcomeStepFoldersDesc;
+
+  /// No description provided for @welcomeFoldersLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Available once hosting is up.'**
+  String get welcomeFoldersLocked;
+
+  /// No description provided for @welcomeMobileStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Install and open PocketCodex on your computer'**
+  String get welcomeMobileStep1;
+
+  /// No description provided for @welcomeMobileStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with the same GitHub account'**
+  String get welcomeMobileStep2;
+
+  /// No description provided for @welcomeMobileStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap \"Start hosting\" — one click completes the setup'**
+  String get welcomeMobileStep3;
+
+  /// No description provided for @welcomeWaitingHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Watching for your host to come online…'**
+  String get welcomeWaitingHost;
+
+  /// No description provided for @welcomeHostFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Host found: {label}'**
+  String welcomeHostFound(String label);
+
+  /// No description provided for @welcomeDownloadDesktop.
+  ///
+  /// In en, this message translates to:
+  /// **'Get the desktop app'**
+  String get welcomeDownloadDesktop;
+
+  /// No description provided for @welcomeEnterChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the chat'**
+  String get welcomeEnterChat;
+
+  /// No description provided for @welcomeSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip the guide'**
+  String get welcomeSkip;
+
+  /// No description provided for @codexSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure Codex'**
+  String get codexSetup;
+
+  /// No description provided for @codexChatNeedsSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Model access isn\'t set up yet — configure Codex before chatting.'**
+  String get codexChatNeedsSetup;
+
+  /// No description provided for @codexSetupStepTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure Codex model access'**
+  String get codexSetupStepTitle;
+
+  /// No description provided for @codexSetupStepDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in a provider (URL + API Key) or sign in with ChatGPT, and optionally switch on the non-degraded system prompt.'**
+  String get codexSetupStepDesc;
+
+  /// No description provided for @codexSetupProviderSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom provider'**
+  String get codexSetupProviderSection;
+
+  /// No description provided for @codexSetupProviderDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Point codex at a third-party or self-hosted model service with its Base URL and API key.'**
+  String get codexSetupProviderDesc;
+
+  /// No description provided for @codexSetupModelLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Model (optional, default gpt-5.5)'**
+  String get codexSetupModelLabel;
+
+  /// No description provided for @codexSetupSaveProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'Save and use'**
+  String get codexSetupSaveProvider;
+
+  /// No description provided for @codexSetupLoginSection.
+  ///
+  /// In en, this message translates to:
+  /// **'ChatGPT login'**
+  String get codexSetupLoginSection;
+
+  /// No description provided for @codexSetupLoginDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Run the model on your ChatGPT subscription; codex generates the credential itself.'**
+  String get codexSetupLoginDesc;
+
+  /// No description provided for @codexSetupLoginButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with ChatGPT'**
+  String get codexSetupLoginButton;
+
+  /// No description provided for @codexSetupLoginWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the browser login…'**
+  String get codexSetupLoginWaiting;
+
+  /// No description provided for @codexSetupMethodsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Model access'**
+  String get codexSetupMethodsTitle;
+
+  /// No description provided for @codexSetupMethodsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick either one — codex uses whichever you configured last.'**
+  String get codexSetupMethodsHint;
+
+  /// No description provided for @codexSetupInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'In use'**
+  String get codexSetupInUse;
+
+  /// No description provided for @codexSetupSwitchTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to this'**
+  String get codexSetupSwitchTo;
+
+  /// No description provided for @codexSetupProxyNote.
+  ///
+  /// In en, this message translates to:
+  /// **'On a restricted network this needs a proxy: set one when you start local hosting.'**
+  String get codexSetupProxyNote;
+
+  /// No description provided for @codexSetupAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get codexSetupAdvanced;
+
+  /// No description provided for @codexSetupNonDegradedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Non-degraded system prompt'**
+  String get codexSetupNonDegradedTitle;
+
+  /// No description provided for @codexSetupNonDegradedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Removes the commentary / progress-report instructions that interrupt the reasoning chain, so the model spends its budget on reasoning.'**
+  String get codexSetupNonDegradedDesc;
+
+  /// No description provided for @codexSetupNonDegradedScope.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to new conversations'**
+  String get codexSetupNonDegradedScope;
+
+  /// No description provided for @codexSetupNonDegradedIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'openai/codex#30364'**
+  String get codexSetupNonDegradedIssue;
+
+  /// No description provided for @codexSetupNeedFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Please fill in both Base URL and API Key.'**
+  String get codexSetupNeedFields;
+
+  /// No description provided for @codexSetupProviderSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider saved. Restart local hosting to use it.'**
+  String get codexSetupProviderSaved;
+
+  /// No description provided for @codexSetupNeedHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Start local hosting under Services first, then sign in with ChatGPT.'**
+  String get codexSetupNeedHost;
+
+  /// No description provided for @codexSetupLoginOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'Opened the login page in your browser; completion is detected automatically…'**
+  String get codexSetupLoginOpened;
+
+  /// No description provided for @codexSetupDeviceOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'Opened the verification page in your browser. Enter the code below there; completion is detected automatically…'**
+  String get codexSetupDeviceOpened;
+
+  /// No description provided for @codexSetupDeviceCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code'**
+  String get codexSetupDeviceCodeLabel;
+
+  /// No description provided for @codexSetupDeviceReopen.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen verification page'**
+  String get codexSetupDeviceReopen;
+
+  /// No description provided for @codexSetupLoginSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in ({method}).'**
+  String codexSetupLoginSuccess(String method);
+
+  /// No description provided for @codexSetupLoginTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'Login timed out, please retry.'**
+  String get codexSetupLoginTimeout;
+
+  /// No description provided for @codexSetupStatusProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom provider configured'**
+  String get codexSetupStatusProvider;
+
+  /// No description provided for @codexSetupStatusAuth.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in ({method})'**
+  String codexSetupStatusAuth(String method);
+
+  /// No description provided for @codexSetupStatusNeedSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Not configured yet'**
+  String get codexSetupStatusNeedSetup;
+
+  /// No description provided for @codexSetupStatusNeedSetupHint.
+  ///
+  /// In en, this message translates to:
+  /// **'codex cannot make a model call yet. Configure either method below.'**
+  String get codexSetupStatusNeedSetupHint;
+
+  /// No description provided for @codexSetupStatusReadyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'codex can make model calls.'**
+  String get codexSetupStatusReadyHint;
+
+  /// No description provided for @codexSetupCodexHomeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Config directory'**
+  String get codexSetupCodexHomeLabel;
+
+  /// No description provided for @codexSetupCredentialExists.
+  ///
+  /// In en, this message translates to:
+  /// **'credential present'**
+  String get codexSetupCredentialExists;
+
+  /// No description provided for @resizeComposer.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to resize; double-click to reset'**
+  String get resizeComposer;
+
+  /// No description provided for @historyGap.
+  ///
+  /// In en, this message translates to:
+  /// **'Load messages in this gap'**
+  String get historyGap;
+
+  /// No description provided for @reviewRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic review request'**
+  String get reviewRequest;
+
+  /// No description provided for @reviewResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Model review result'**
+  String get reviewResult;
+
+  /// No description provided for @reviewAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed'**
+  String get reviewAllowed;
+
+  /// No description provided for @reviewDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Denied'**
+  String get reviewDenied;
+
+  /// No description provided for @reviewLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get reviewLow;
+
+  /// No description provided for @reviewMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get reviewMedium;
+
+  /// No description provided for @reviewHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get reviewHigh;
+
+  /// No description provided for @reviewCritical.
+  ///
+  /// In en, this message translates to:
+  /// **'Critical'**
+  String get reviewCritical;
+
+  /// No description provided for @reviewUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get reviewUnknown;
+
+  /// No description provided for @reviewRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'Risk: {level}'**
+  String reviewRisk(String level);
+
+  /// No description provided for @reviewAuthorization.
+  ///
+  /// In en, this message translates to:
+  /// **'Authorization: {level}'**
+  String reviewAuthorization(String level);
+
+  /// No description provided for @reviewRaw.
+  ///
+  /// In en, this message translates to:
+  /// **'View original content'**
+  String get reviewRaw;
+
+  /// No description provided for @conversationOutline.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation outline'**
+  String get conversationOutline;
+
+  /// No description provided for @searchTurns.
+  ///
+  /// In en, this message translates to:
+  /// **'Search messages or enter a turn number'**
+  String get searchTurns;
+
+  /// No description provided for @turnPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn {current} of {total}'**
+  String turnPosition(int current, int total);
+
+  /// No description provided for @stepRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps {first}–{last} of {total}'**
+  String stepRange(int first, int last, int total);
+
+  /// No description provided for @previousSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous steps'**
+  String get previousSteps;
+
+  /// No description provided for @nextSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Next steps'**
+  String get nextSteps;
+
+  /// No description provided for @latestSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest steps'**
+  String get latestSteps;
+
+  /// No description provided for @jumpToStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Jump to step'**
+  String get jumpToStep;
+
+  /// No description provided for @stepNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Step number'**
+  String get stepNumber;
+
+  /// No description provided for @noMatchingTurns.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching turns'**
+  String get noMatchingTurns;
+
+  /// No description provided for @loadingTurn.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening turn {number}…'**
+  String loadingTurn(int number);
+
+  /// No description provided for @historySyncing.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing history…'**
+  String get historySyncing;
+
+  /// No description provided for @historyCachedOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Cached history · waiting to sync'**
+  String get historyCachedOffline;
+
+  /// No description provided for @historyCacheTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation cache'**
+  String get historyCacheTitle;
+
+  /// No description provided for @historyCacheDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared disk limit in MB. 0 disables caching.'**
+  String get historyCacheDescription;
+
+  /// No description provided for @historyCacheUsage.
+  ///
+  /// In en, this message translates to:
+  /// **'{used} MB used · {limit} MB limit'**
+  String historyCacheUsage(String used, int limit);
+
+  /// No description provided for @historyCacheInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number from 0 to 64000.'**
+  String get historyCacheInvalid;
+
+  /// No description provided for @modeAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for approval'**
+  String get modeAsk;
+
+  /// No description provided for @modeAskDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Work in the workspace; ask you before actions that require approval.'**
+  String get modeAskDesc;
+
+  /// No description provided for @fastMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Fast'**
+  String get fastMode;
+
+  /// No description provided for @fastModeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the model’s Fast service tier for subsequent turns.'**
+  String get fastModeHint;
+
+  /// No description provided for @steerMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplement'**
+  String get steerMessage;
+
+  /// No description provided for @steerMessageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to the current turn at its next step. Otherwise, queue for the next turn.'**
+  String get steerMessageHint;
+
+  /// No description provided for @queueNextTurn.
+  ///
+  /// In en, this message translates to:
+  /// **'Queue for next turn'**
+  String get queueNextTurn;
+
+  /// No description provided for @steerTurnEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'The turn changed or ended. Your draft is kept; send it as a new turn.'**
+  String get steerTurnEnded;
+
+  /// No description provided for @advancedSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced settings'**
+  String get advancedSettings;
+
+  /// No description provided for @planModeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan first without implementing. Normal mode is recommended for most tasks.'**
+  String get planModeDescription;
+
+  /// No description provided for @imageGenerating.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating image…'**
+  String get imageGenerating;
+
+  /// No description provided for @imageLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading image…'**
+  String get imageLoading;
+
+  /// No description provided for @imageGenerationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Image generation failed'**
+  String get imageGenerationFailed;
+
+  /// No description provided for @imageGenerationIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Image generation incomplete'**
+  String get imageGenerationIncomplete;
+
+  /// No description provided for @imageGenerationUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No image was returned'**
+  String get imageGenerationUnavailable;
+
+  /// No description provided for @imageGenerationLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Image generation usage limit reached'**
+  String get imageGenerationLimit;
+
+  /// No description provided for @fileLinkPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get fileLinkPreview;
+
+  /// No description provided for @fileLinkDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get fileLinkDownload;
+
+  /// No description provided for @fileLinkUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This file cannot be previewed. Download it to open with an app on your device.'**
+  String get fileLinkUnsupported;
+
+  /// No description provided for @fileLinkTruncated.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing a limited preview. Download for the complete file.'**
+  String get fileLinkTruncated;
+
+  /// No description provided for @fileLinkLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading file…'**
+  String get fileLinkLoading;
+
+  /// No description provided for @fileLinkRemoteWebTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Website on the host'**
+  String get fileLinkRemoteWebTitle;
+
+  /// No description provided for @fileLinkRemoteWeb.
+  ///
+  /// In en, this message translates to:
+  /// **'This address points to the controlled device, not this device. Use pb-mapper to register the web service port on the host and subscribe to it on this device, then open the mapped local address. Keep the URL path and query unchanged.'**
+  String get fileLinkRemoteWeb;
+
+  /// No description provided for @fileLinkCheckingHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking host location…'**
+  String get fileLinkCheckingHost;
+
+  /// No description provided for @fileLinkFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to read the file. Check that it still exists and the host is running a version that supports file links.'**
+  String get fileLinkFailed;
+
+  /// No description provided for @fileLinkClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get fileLinkClose;
+}
+
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
+  const _AppLocalizationsDelegate();
+
+  @override
+  Future<AppLocalizations> load(Locale locale) {
+    return SynchronousFuture<AppLocalizations>(lookupAppLocalizations(locale));
+  }
+
+  @override
+  bool isSupported(Locale locale) =>
+      <String>['en', 'zh'].contains(locale.languageCode);
+
+  @override
+  bool shouldReload(_AppLocalizationsDelegate old) => false;
+}
+
+AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when only language code is specified.
+  switch (locale.languageCode) {
+    case 'en':
+      return AppLocalizationsEn();
+    case 'zh':
+      return AppLocalizationsZh();
+  }
+
+  throw FlutterError(
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
+}

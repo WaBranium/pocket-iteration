@@ -1,0 +1,666 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart' show ValueListenable;
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:pocket_codex/src/desktop_theme.dart';
+import 'package:pocket_codex/src/fonts.dart';
+import 'package:pocket_codex/src/theme.dart';
+
+/// One turn on the minimap: where to jump, and what to show while hovering it.
+@immutable
+class TurnMinimapItem {
+  /// Creates a minimap entry.
+  const TurnMinimapItem({
+    required this.rowIndex,
+    required this.userText,
+    this.assistantText,
+    this.turnId = '',
+    this.messageId = '',
+  });
+
+  /// Index of this turn's user message in the transcript's row list — what the
+  /// list controller is asked to scroll to. `-1` for a turn the transcript
+  /// hasn't loaded: the tick still marks where the turn sits in the
+  /// conversation, but there is no row to scroll to until its items arrive.
+  final int rowIndex;
+
+  /// Id of the turn, so selecting a tick whose [rowIndex] is `-1` can fetch it.
+  /// Empty when the caller derived entries from rows alone.
+  final String turnId;
+
+  /// Stable user-message id for read-only transcripts that have no turn ids.
+  /// Keeps the same target across snapshot refreshes and row regrouping.
+  final String messageId;
+
+  /// The user's own message, one line, whitespace already collapsed.
+  final String userText;
+
+  /// The turn's final reply, for the preview's second block. Null when the turn
+  /// produced no prose (tool calls only, or still running).
+  final String? assistantText;
+}
+
+/// Below this many turns the rail says nothing a scrollbar doesn't, and the
+/// corner arrows are the better affordance.
+///
+/// The rail earns its place by showing a conversation's *shape* — how many turns
+/// there are and where you sit among them. At two or three ticks there is no
+/// shape to show, and what is left is a hover-only target that steps one turn at
+/// a time, which is exactly what the arrows already do with a visible label and a
+/// touch-sized target. So below this, the arrows come back.
+const int kTurnMinimapMinItems = 4;
+
+/// Nominal spacing between ticks. The rail's natural height is this times the
+/// gaps, then capped to the space available — past that the ticks compress and
+/// the rail stops growing.
+const double _kTickSpacing = 10;
+
+/// Left inset of the rail within the gutter. Exported because the transcript
+/// needs it to tell whether the gutter can hold the rail at all — with less than
+/// this there is nowhere for it to sit and the corner arrows keep the job.
+const double kTurnMinimapRailInset = 12;
+
+/// Widest the resting hit strip may be. Capped against the real gutter too, so
+/// the strip can never reach over the centred column and swallow a selection.
+const double _kHitStripMaxWidth = 40;
+
+/// Invisible tolerance around the rail ends and the preview card.
+const double _kRailHitPadding = 12;
+const double _kPreviewHitPadding = 8;
+const double _kPreviewGap = 10;
+
+/// Gutter at or above which the rail simply stays visible. Narrower than this
+/// there isn't room for it to rest without crowding the text, so it fades in on
+/// approach instead.
+const double kTurnMinimapPersistentGutter = 48;
+
+/// Preferred width of the hover preview card, the narrowest it may shrink to
+/// before it stops being worth showing, and how far it may reach past the gutter
+/// over the conversation.
+///
+/// It has to overhang somewhat — a readable card does not fit in a 60 px margin —
+/// but a card that buries the text you are scanning defeats its own purpose, so
+/// the overhang is bounded and the card narrows within that budget.
+const double _kPreviewWidth = 300;
+const double _kMinPreviewWidth = 150;
+const double _kMaxPreviewOverhang = 160;
+
+const double _kTickWidth = 6;
+const double _kCurrentTickWidth = 13;
+const double _kPreviewTickWidth = 26;
+
+double _hoverTickWidth(int distance) => switch (distance) {
+  0 => _kPreviewTickWidth,
+  1 => 20,
+  2 => 14,
+  3 => 10,
+  _ => _kTickWidth,
+};
+
+/// A left-gutter overview with spaced ticks: hover to preview, click to jump.
+/// Dense histories are sampled visually; every turn remains in the outline.
+///
+/// This replaces a pair of prev/next arrows in the bottom-right corner. Those
+/// could only step, one turn at a time, with no indication of how many turns
+/// there were, where in them you currently sat, or what you would land on — so
+/// finding a particular exchange in a long conversation meant clicking blind and
+/// reading after each jump. The rail shows the whole conversation's shape at
+/// once and makes any turn one click away.
+///
+/// Pointer-only and desktop-only by construction: it is a hover affordance, and
+/// a 2 px tick is not a touch target. Compact layouts keep the arrows.
+class TurnMinimap extends StatefulWidget {
+  /// Creates the rail.
+  const TurnMinimap({
+    super.key,
+    required this.items,
+    required this.visibleRange,
+    required this.gutterWidth,
+    required this.onSelect,
+    this.onPreview,
+    this.onOpenOutline,
+  });
+
+  /// The turns, in transcript order.
+  final List<TurnMinimapItem> items;
+
+  /// The transcript's currently visible row range, as `(first, last)`. Listened
+  /// to rather than read so scrolling repaints only the ticks — the transcript
+  /// itself must not rebuild on every scroll frame.
+  final ValueListenable<(int, int)?> visibleRange;
+
+  /// Space between the window edge and the centred conversation column. The rail
+  /// lives here; when there is none it goes inert.
+  final double gutterWidth;
+
+  /// Jump to this turn.
+  final ValueChanged<TurnMinimapItem> onSelect;
+
+  /// Preview notification only. Use the supplied summary; never fetch history
+  /// on hover. Only explicit selection should start a page request.
+  final ValueChanged<TurnMinimapItem>? onPreview;
+
+  /// Opens the exact, searchable index without loading transcript pages.
+  final VoidCallback? onOpenOutline;
+
+  @override
+  State<TurnMinimap> createState() => _TurnMinimapState();
+}
+
+class _TurnMinimapState extends State<TurnMinimap> {
+  /// The tick the pointer (or the keyboard) is on, or null when neither is.
+  /// Takes over the single position highlight and opens the preview.
+  int? _active;
+
+  /// Whether the pointer is anywhere near the rail. Only used to fade the rail
+  /// in on a window too narrow to keep it resting.
+  bool _hovering = false;
+
+  final _focus = FocusNode(debugLabel: 'turn-minimap');
+  TurnMinimapItem? _pressed;
+  List<int> _loadedIndices = [];
+
+  void _indexLoadedRows() {
+    _loadedIndices =
+        [
+          for (var i = 0; i < widget.items.length; i++)
+            if (widget.items[i].rowIndex >= 0) i,
+        ]..sort(
+          (a, b) =>
+              widget.items[a].rowIndex.compareTo(widget.items[b].rowIndex),
+        );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _indexLoadedRows();
+  }
+
+  @override
+  void dispose() {
+    _focus.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(TurnMinimap old) {
+    super.didUpdateWidget(old);
+    if (!identical(old.items, widget.items)) _indexLoadedRows();
+    final active = _active;
+    final item = active == null ? null : old.items[active];
+    if (item != null && (item.turnId.isNotEmpty || item.messageId.isNotEmpty)) {
+      final index = _indexOf(item);
+      _active = index < 0 ? null : index;
+      return;
+    }
+    // A turn was removed (a rewind, a reload) — an index past the end would
+    // otherwise resolve to nothing and leave a stuck preview.
+    _active = _clampIndex(_active);
+  }
+
+  /// [index] pulled back inside the current turn list, or null when there are no
+  /// turns left to point at.
+  int? _clampIndex(int? index) {
+    if (index == null || index < widget.items.length) return index;
+    return widget.items.isEmpty ? null : widget.items.length - 1;
+  }
+
+  /// Where the rail sits: [kTurnMinimapRailInset] from the window's left edge,
+  /// whatever the gutter is doing.
+  ///
+  /// It used to be placed relative to the conversation column instead, hugging
+  /// its left edge — which tracked the column outward as the window widened and
+  /// left the rail floating in the middle of empty margin. This is an index of
+  /// the whole conversation, so it belongs at the frame where a scrollbar would
+  /// be, not attached to the prose.
+  double get _railLeft => kTurnMinimapRailInset;
+
+  /// Rest width of the pointer region: the gutter minus the rail's inset, capped.
+  /// Zero (inert) when the gutter can't hold it.
+  ///
+  /// The cap is what keeps the strip off the text: the column is centred, so a
+  /// strip that grew with the gutter would eventually reach under the prose and
+  /// swallow clicks meant for it.
+  double get _hitWidth => math.max(
+    0,
+    math.min(
+      _kHitStripMaxWidth,
+      widget.gutterWidth.floorToDouble() - _railLeft,
+    ),
+  );
+
+  bool get _persistent => widget.gutterWidth >= kTurnMinimapPersistentGutter;
+
+  /// Where tick [index] sits, as a fraction of the rail's height.
+  double _fractionOf(int index) {
+    final count = widget.items.length;
+    if (count <= 1) return 0;
+    return index.clamp(0, count - 1) / (count - 1);
+  }
+
+  /// The tick nearest [localY] on a rail of [railHeight].
+  int? _indexAt(double localY, double railHeight) {
+    final count = widget.items.length;
+    if (count <= 0 || railHeight <= 0) return null;
+    if (count == 1) return 0;
+    final progress = (localY / railHeight).clamp(0.0, 1.0);
+    return (progress * (count - 1)).round().clamp(0, count - 1);
+  }
+
+  /// The turn containing the viewport's first row, even when its user message
+  /// has scrolled offscreen. Unloaded turns have no row to compare against.
+  int? _currentIndex((int, int)? range) {
+    if (range == null || _loadedIndices.isEmpty) return null;
+    var low = 0;
+    var high = _loadedIndices.length;
+    while (low < high) {
+      final middle = (low + high) ~/ 2;
+      if (widget.items[_loadedIndices[middle]].rowIndex <= range.$1) {
+        low = middle + 1;
+      } else {
+        high = middle;
+      }
+    }
+    if (low > 0) return _loadedIndices[low - 1];
+    return widget.items[_loadedIndices.first].rowIndex <= range.$2
+        ? _loadedIndices.first
+        : null;
+  }
+
+  void _move(int delta) {
+    setState(() {
+      final base = _active ?? 0;
+      _active = (base + delta).clamp(0, widget.items.length - 1);
+    });
+  }
+
+  void _select(int index) {
+    final item = widget.items.elementAtOrNull(index);
+    if (item == null) return;
+    widget.onSelect(item);
+    // Drop focus after a jump so the preview doesn't hang over the place the
+    // user just navigated to. The visible range keeps marking their position.
+    _focus.unfocus();
+    setState(() {
+      _active = null;
+    });
+  }
+
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      return KeyEventResult.ignored;
+    }
+    switch (event.logicalKey) {
+      case LogicalKeyboardKey.arrowDown:
+        _move(1);
+      case LogicalKeyboardKey.arrowUp:
+        _move(-1);
+      case LogicalKeyboardKey.home:
+        setState(() => _active = 0);
+      case LogicalKeyboardKey.end:
+        setState(() => _active = widget.items.length - 1);
+      case LogicalKeyboardKey.enter:
+      case LogicalKeyboardKey.space:
+        final active = _active;
+        if (active != null) _select(active);
+      default:
+        return KeyEventResult.ignored;
+    }
+    return KeyEventResult.handled;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.items.length < kTurnMinimapMinItems) {
+      return const SizedBox.shrink();
+    }
+    final hitWidth = _hitWidth;
+    // No gutter to live in: rather than reach over the text, the rail stands
+    // down entirely and the transcript keeps its own scrollbar.
+    if (hitWidth <= 0) return const SizedBox.shrink();
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // The rail is centred vertically and grows with the turn count until it
+        // runs out of room, after which the ticks pack tighter instead.
+        final available = math.max(0.0, constraints.maxHeight - 96);
+        final natural = math.max(
+          1.0,
+          (widget.items.length - 1) * _kTickSpacing,
+        );
+        final railHeight = math.min(natural, available);
+        final railTop = (constraints.maxHeight - railHeight) / 2;
+        final open = _active != null;
+        final scheme = Theme.of(context).colorScheme;
+        return Focus(
+          focusNode: _focus,
+          onKeyEvent: _onKey,
+          onFocusChange: (has) =>
+              setState(() => _active = has ? (_active ?? 0) : null),
+          child: MouseRegion(
+            opaque: false,
+            hitTestBehavior: HitTestBehavior.deferToChild,
+            cursor: clickable,
+            onEnter: (event) {
+              setState(() => _hovering = true);
+              if (_active == null) {
+                _hoverAt(event.localPosition.dy - railTop, railHeight);
+              }
+            },
+            onExit: (_) => _leave(),
+            child: AnimatedOpacity(
+              opacity: _persistent || _hovering || open ? 1 : 0,
+              duration: const Duration(milliseconds: 150),
+              // Both hit targets live in the viewport, since a short rail can
+              // have a preview taller than itself. Empty space stays pass-through.
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  _rail(railHeight, railTop, hitWidth, scheme),
+                  _railTarget(railHeight, railTop, hitWidth),
+                  ?_preview(railHeight, railTop),
+                  if (widget.onOpenOutline != null)
+                    Positioned(
+                      left: 0,
+                      top: railTop + railHeight + 14,
+                      child: ValueListenableBuilder<(int, int)?>(
+                        valueListenable: widget.visibleRange,
+                        builder: (_, range, _) => TextButton(
+                          key: const Key('turn-minimap-outline'),
+                          onPressed: widget.onOpenOutline,
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            minimumSize: const Size(40, 32),
+                            textStyle: Theme.of(
+                              context,
+                            ).textTheme.labelSmall?.copyWith(fontSize: 10),
+                          ),
+                          child: Text(
+                            '${(_currentIndex(range) ?? 0) + 1} / ${widget.items.length}',
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _rail(
+    double railHeight,
+    double railTop,
+    double hitWidth,
+    ColorScheme scheme,
+  ) => Positioned(
+    left: _railLeft,
+    top: railTop,
+    width: hitWidth,
+    height: railHeight,
+    child: IgnorePointer(
+      child: SizedBox(
+        key: const Key('turn-minimap-rail'),
+        child: ValueListenableBuilder<(int, int)?>(
+          valueListenable: widget.visibleRange,
+          builder: (context, range, _) => Stack(
+            clipBehavior: Clip.none,
+            children: _ticks(
+              railHeight,
+              scheme,
+              _active ?? _currentIndex(range),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  Widget _railTarget(double railHeight, double railTop, double hitWidth) =>
+      Positioned(
+        left: 0,
+        top: railTop - _kRailHitPadding,
+        width: _railLeft + hitWidth,
+        height: railHeight + 2 * _kRailHitPadding,
+        child: MouseRegion(
+          onHover: (event) =>
+              _hoverAt(event.localPosition.dy - _kRailHitPadding, railHeight),
+          child: _tapTarget(
+            indexAt: (details) =>
+                details.kind == PointerDeviceKind.mouse && _active != null
+                ? _active
+                : _indexAt(
+                    details.localPosition.dy - _kRailHitPadding,
+                    railHeight,
+                  ),
+            child: const SizedBox.expand(),
+          ),
+        ),
+      );
+
+  void _hoverAt(double localY, double railHeight) {
+    final next = _indexAt(localY, railHeight);
+    if (next == _active) return;
+    setState(() => _active = next);
+    if (next != null) widget.onPreview?.call(widget.items[next]);
+  }
+
+  int _indexOf(TurnMinimapItem item) => widget.items.indexWhere((entry) {
+    if (item.messageId.isNotEmpty) return entry.messageId == item.messageId;
+    if (item.turnId.isNotEmpty) return entry.turnId == item.turnId;
+    return identical(entry, item);
+  });
+
+  Widget _tapTarget({
+    required int? Function(TapDownDetails) indexAt,
+    required Widget child,
+  }) => GestureDetector(
+    behavior: HitTestBehavior.opaque,
+    onTapDown: (details) {
+      final index = indexAt(details);
+      _pressed = index == null ? null : widget.items.elementAtOrNull(index);
+    },
+    onTapCancel: () => _pressed = null,
+    onTap: () {
+      final item = _pressed;
+      _pressed = null;
+      if (item == null) return;
+      // Monitoring can shift rows between press and release. Resolve the same
+      // message or turn in the latest list.
+      final index = _indexOf(item);
+      if (index >= 0) _select(index);
+    },
+    child: child,
+  );
+
+  void _leave() {
+    if (!_hovering && _active == null) return;
+    setState(() {
+      _hovering = false;
+      _active = null;
+    });
+  }
+
+  /// The ticks. Each repaints on scroll through [TurnMinimap.visibleRange]
+  /// alone, so following a streaming reply never rebuilds the transcript.
+  List<Widget> _ticks(double railHeight, ColorScheme scheme, int? highlighted) {
+    // Paint a bounded overview. The exact active turn remains addressable via
+    // pointer mapping, keyboard, and the outline even between sampled marks.
+    final count = widget.items.length;
+    final slots = math.min(count, math.max(2, (railHeight / 8).floor() + 1));
+    final indices = <int>{
+      for (var slot = 0; slot < slots; slot++)
+        (slot * (count - 1) / (slots - 1)).round(),
+      ?highlighted,
+    }.toList()..sort();
+    return [
+      for (final i in indices)
+        Positioned(
+          left: 0,
+          top: railHeight * _fractionOf(i) - 1,
+          // Switch immediately so the pointed-at tick is always the longest,
+          // including while the pointer moves between ticks.
+          child: Container(
+            key: ValueKey('turn-minimap-tick-$i'),
+            height: 2,
+            width: _active != null && count == slots
+                ? _hoverTickWidth((i - _active!).abs())
+                : i == _active
+                ? _kPreviewTickWidth
+                : i == highlighted
+                ? _kCurrentTickWidth
+                : _kTickWidth,
+            decoration: BoxDecoration(
+              color: i == highlighted
+                  ? scheme.primary
+                  : scheme.onSurface.withValues(
+                      alpha: scheme.brightness == Brightness.dark ? 0.15 : 0.25,
+                    ),
+            ),
+          ),
+        ),
+    ];
+  }
+
+  /// The hover card, anchored to its tick rather than to the cursor, so it holds
+  /// still while the pointer travels into it.
+  Widget? _preview(double railHeight, double railTop) {
+    final active = _active;
+    if (active == null) return null;
+    final item = widget.items.elementAtOrNull(active);
+    if (item == null) return null;
+    // A turn with neither a message nor a reply to show gets no card: an empty
+    // one would only cover the conversation it is meant to help you find.
+    if (item.userText.trim().isEmpty &&
+        (item.assistantText?.trim().isEmpty ?? true)) {
+      return null;
+    }
+    final fraction = _fractionOf(active);
+    // The card would overflow the rail at the ends, so its anchor slides: the
+    // first turn hangs below its tick, the last above it, the rest straddle.
+    final align = active == 0
+        ? 0.0
+        : active == widget.items.length - 1
+        ? -1.0
+        : -0.5;
+    // Clear of the widest tick, so the card never sits on the mark it describes.
+    const left = _kPreviewTickWidth + _kPreviewGap;
+    // The card is allowed to overhang the gutter — it has to be readable, and a
+    // 300 px card cannot fit a 60 px margin — but not by so much that it buries
+    // the conversation. Past this it narrows instead, and if it cannot stay
+    // legible at all the tick simply doesn't preview.
+    final room = widget.gutterWidth - _railLeft - left + _kMaxPreviewOverhang;
+    final width = math.min(_kPreviewWidth, room);
+    if (width < _kMinPreviewWidth) return null;
+    return Positioned(
+      left: _railLeft + _kPreviewTickWidth,
+      // Compensate for the invisible padding to keep the visual anchor fixed.
+      top:
+          railTop +
+          railHeight * fraction -
+          _kPreviewHitPadding * (1 + 2 * align),
+      child: FractionalTranslation(
+        translation: Offset(0, align),
+        child: _tapTarget(
+          indexAt: (_) => _active,
+          child: Padding(
+            // The gap is part of the card's target: moving sideways latches the
+            // preview instead of scanning more tightly packed ticks on the way.
+            padding: const EdgeInsets.fromLTRB(
+              _kPreviewGap,
+              _kPreviewHitPadding,
+              _kPreviewHitPadding,
+              _kPreviewHitPadding,
+            ),
+            child: _TurnPreviewCard(
+              item: item,
+              width: width,
+              index: active,
+              total: widget.items.length,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The floating preview: what the user asked, and how the turn answered.
+class _TurnPreviewCard extends StatelessWidget {
+  const _TurnPreviewCard({
+    required this.item,
+    required this.width,
+    required this.index,
+    required this.total,
+  });
+
+  final TurnMinimapItem item;
+
+  /// Resolved width — the preferred one, or less where the gutter is tight.
+  final double width;
+  final int index;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final reply = item.assistantText?.trim() ?? '';
+    final question = item.userText.trim();
+    return Container(
+      key: const Key('turn-minimap-preview'),
+      width: width,
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 11),
+      decoration: BoxDecoration(
+        color: surfacePreview(scheme),
+        borderRadius: BorderRadius.circular(kPanelRadius),
+        // A hairline as well as a shadow: this floats over prose, where a
+        // shadow alone leaves a light card on a light page with no edge.
+        border: Border.all(color: scheme.outline),
+        boxShadow: panelShadow(scheme, blur: 18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '${index + 1} / $total',
+            style: theme.textTheme.labelSmall?.copyWith(color: scheme.primary),
+          ),
+          const SizedBox(height: 4),
+          // An attachment-only turn has no words of its own to head the card, so
+          // the reply stands alone rather than under an empty line.
+          if (question.isNotEmpty)
+            Text(
+              question,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontFamilyFallback: cjkFontFallback,
+                color: scheme.onSurface,
+              ),
+            ),
+          if (reply.isNotEmpty) ...[
+            if (question.isNotEmpty) const SizedBox(height: 4),
+            Text(
+              reply,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: scheme.onSurfaceVariant,
+                height: 1.4,
+                fontFamilyFallback: cjkFontFallback,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}

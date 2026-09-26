@@ -1,0 +1,212 @@
+# Desktop build variant of pubspec.yaml: identical dependencies PLUS
+# the bundled Noto Sans SC font (the `fonts:` block at the bottom). The desktop
+# release jobs (.github/workflows/release.yml: app-windows / app-linux /
+# app-macos) copy this over pubspec.yaml before building, so only desktop
+# artifacts carry the ~17 MB font; mobile (Android/iOS) builds use the default
+# pubspec.yaml and the OS CJK fonts instead. See AGENTS.md › Fonts.
+#
+# KEEP IN SYNC: when you edit dependencies in pubspec.yaml, mirror the change
+# here (everything except the trailing `fonts:` block must match pubspec.yaml).
+name: pocket_codex
+description: "PocketCodex Flutter front-end. Drives codex app-server through flutter_rust_bridge."
+publish_to: 'none'
+
+version: 0.2.5+25
+
+# Flutter SDK is locked at the project level via FVM (`.fvmrc`) and at
+# the language level via `environment.flutter`. CI uses
+# `subosito/flutter-action@v2` with the same version pin. Whenever
+# you bump Flutter, update all three sites in lockstep.
+environment:
+  sdk: ^3.12.0
+  flutter: "3.44.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # gen-l10n localization (ARB-driven). intl's version is pinned by the
+  # Flutter SDK; leave it unconstrained so `pub get` resolves the match.
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  cupertino_icons: ^1.0.8
+  # flutter_rust_bridge is wired up by `flutter_rust_bridge_codegen
+  # integrate`. The version constraint here is what `pub get` checks
+  # against; the codegen tool picks a matching binary.
+  flutter_rust_bridge: 2.12.0
+  pocket_codex_bridge:
+    path: rust_builder
+  flutter_riverpod: ^2.6.1
+  go_router: ^14.6.2
+  path_provider: ^2.1.5
+  # Renders agent replies as Markdown documents (headings, code, lists,
+  # tables) instead of plain chat bubbles. Maintained drop-in for the
+  # discontinued flutter_markdown (same `MarkdownBody` API).
+  flutter_markdown_plus: ^1.0.3
+  # The CommonMark parser behind flutter_markdown_plus. Declared directly
+  # because lib/src/markdown_cjk.dart registers a custom InlineSyntax with it
+  # (CommonMark's emphasis rules can't bold CJK text next to full-width
+  # punctuation). Must stay compatible with flutter_markdown_plus's own pin.
+  markdown: ^7.3.1
+  # Opens URLs in the system browser (tapped links in agent replies / tool
+  # output / plain text). url_launcher_windows is bundled and auto-registered.
+  url_launcher: ^6.3.1
+  # Browser-redirect GitHub login (the convenient mode): opens an in-app browser
+  # tab (ASWebAuthenticationSession on iOS, Custom Tabs on Android) or a system
+  # browser + loopback listener (desktop), and captures the backend's redirect
+  # back to the app. The backend brokers GitHub's authorization-code flow; the
+  # app only ever holds a one-time exchange code (+ a PKCE verifier). Mobile
+  # needs the CallbackActivity intent-filter (AndroidManifest) / CFBundleURLSchemes
+  # (Info.plist) for the `pocketcodex` scheme; desktop uses http://localhost.
+  flutter_web_auth_2: ^4.1.0
+  # Linkifies bare URLs in plain-text widgets (user bubbles, tool/command
+  # output, reasoning) — markdown links are handled by MarkdownBody itself.
+  flutter_linkify: ^6.0.0
+  # Variable-height-aware lazy list. The conversation mixes very short message
+  # bubbles with tall command/code/output/grouped-activity cards; a plain
+  # ListView.builder estimates total scroll extent from a running average of
+  # laid-out children, so the scrollbar thumb jumps as differently sized rows
+  # enter/leave the viewport during a drag (and as agent text streams in).
+  # SuperListView estimates per-item extents and reconciles them against the
+  # real height as rows scroll through the cache area, giving a stable thumb
+  # while keeping lazy virtualization. Pure-Dart, MIT, all platforms. Pinned —
+  # the package is in low-maintenance mode (no release since 2024); pin guards
+  # against a future-Flutter break and avoids relying on the (buggy on desktop)
+  # animateToItem/ListController path — we keep the existing ScrollController.
+  super_sliver_list: 0.4.1
+  # Desktop system tray (Windows/macOS/Linux). tray_manager draws the tray icon
+  # + context menu; window_manager intercepts the window-close (so closing
+  # hides to tray instead of quitting) and shows/focuses the window from the
+  # tray. Both are no-ops on mobile — main.dart gates init on desktop. Linux
+  # builds additionally need libayatana-appindicator3-dev (see release.yml).
+  tray_manager: ^0.5.2
+  window_manager: ^0.5.1
+  file_selector: ^1.1.0
+  # Native mobile Save As dialogs; 0.5+ needs a newer SDK-pinned meta package.
+  file_saver: ^0.4.0
+  path: ^1.9.1
+  # Message image attachments: pick from the photo library on Android/iOS
+  # (PHPicker / system Photo Picker — no runtime permission needed) and a
+  # file dialog on desktop (delegates to file_selector). Camera is not used,
+  # so no camera permission strings are required.
+  image_picker: ^1.2.0
+  # Decode → EXIF-bake → downscale → JPEG-re-encode picked images in a
+  # background isolate before sending, so a 12 MP photo doesn't ship
+  # multi-MB base64 through the relay tunnel and the model context. Pure
+  # Dart. (Also used by test/gen_icon_test.dart for icon generation.)
+  image: ^4.9.1
+  desktop_drop: ^0.7.1
+  pasteboard: ^0.5.0
+  re_highlight: ^0.0.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  integration_test:
+    sdk: flutter
+  # Widget tests swap ImagePickerPlatform.instance / FileSelectorPlatform.instance
+  # for fakes (the real pickers are platform channels that can't run headless).
+  # All are already in the dependency graph; declared so tests may import them.
+  image_picker_platform_interface: ^2.11.0
+  file_selector_platform_interface: ^2.6.0
+  plugin_platform_interface: ^2.1.8
+  flutter_launcher_icons: ^0.14.2
+  flutter_native_splash: ^2.4.3
+
+flutter:
+  uses-material-design: true
+  generate: true
+  # Only the theme-matched brand marks ship in the bundle. logo.png stays in
+  # the repo as marketing material — bundling it would add dead weight.
+  #
+  # The tray icons (tray.png for macOS/Linux, tray.ico for Windows) are tiny and
+  # only loaded on desktop; tray_manager resolves them relative to
+  # data/flutter_assets, so they must ship as bundled assets. Generated from
+  # icon/logo_dark.png by test/gen_icon_test.dart.
+  assets:
+    - assets/logo/mark_light.png
+    - assets/logo/mark_dark.png
+    - assets/logo/glyph_light.png
+    - assets/logo/glyph_dark.png
+    - assets/tray/tray.png
+    - assets/tray/tray_template@2x.png
+    - assets/tray/tray.ico
+  # KEEP IN SYNC with pubspec.yaml's Figtree/GeistMono block; the Noto Sans SC
+  # family below is the one entry that is desktop-only.
+  fonts:
+    - family: Figtree
+      fonts:
+        - asset: assets/fonts/Figtree-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Figtree-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Figtree-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Figtree-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Figtree-Bold.ttf
+          weight: 700
+    - family: GeistMono
+      fonts:
+        - asset: assets/fonts/GeistMono-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/GeistMono-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/GeistMono-SemiBold.ttf
+          weight: 600
+    - family: Noto Sans SC
+      fonts:
+        - asset: assets/fonts/NotoSansSC-VariableFont_wght.ttf
+
+flutter_launcher_icons:
+  # All launcher icons derive from icon/logo_dark.png (the ink tile reads on
+  # light AND dark docks); test/gen_icon_test.dart generates:
+  #   icon_glyph.png        rounded tile + ~10% margin (desktop / web)
+  #   icon_mobile.png       full-bleed opaque tile (iOS + Android legacy)
+  #   icon_adaptive_bg.png  solid tile colour (Android adaptive background)
+  #   icon_adaptive_fg.png  tile shrunk into the safe zone (adaptive fg)
+  image_path: "icon/icon_glyph.png"
+  # iOS: full-bleed opaque tile; remove_alpha is a harmless safety net.
+  ios: true
+  image_path_ios: "icon/icon_mobile.png"
+  remove_alpha_ios: true
+  # Android: legacy square mipmaps from image_path_android (old launchers show
+  # the tile as-is) PLUS an adaptive icon (API 26+) whose foreground keeps the
+  # tile inside the safe zone so a circle/squircle mask never clips it.
+  android: true
+  image_path_android: "icon/icon_mobile.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "icon/icon_adaptive_bg.png"
+  adaptive_icon_foreground: "icon/icon_adaptive_fg.png"
+  adaptive_icon_foreground_inset: 0
+  # Web: PWA icons + manifest colours (replaces the stock Flutter favicon).
+  web:
+    generate: true
+    image_path: "icon/icon_glyph.png"
+    background_color: "#FFFFFF"
+    theme_color: "#355ACF"
+  # Windows: emits runner/resources/app_icon.ico (window + taskbar).
+  windows:
+    generate: true
+    image_path: "icon/icon_glyph.png"
+    icon_size: 256
+  # macOS: the Dock shows the icon as-is (no mask); the rounded tile carries
+  # the standard ~10% margin baked into icon_glyph.png.
+  macos:
+    generate: true
+    image_path: "icon/icon_glyph.png"
+
+# Theme-matched splash: each mark is its theme's tile, and the background
+# colour equals that tile's interior (sampled + printed by gen_icon_test.dart),
+# so the tile melts into the splash and only the cloud glyph shows.
+flutter_native_splash:
+  image: assets/logo/mark_light.png
+  image_dark: assets/logo/mark_dark.png
+  color: "#FDFDFD"
+  color_dark: "#1A1D24"
+  android_12:
+    image: assets/logo/mark_light.png
+    image_dark: assets/logo/mark_dark.png
+    color: "#FDFDFD"
+    color_dark: "#1A1D24"

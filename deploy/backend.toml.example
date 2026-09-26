@@ -1,0 +1,42 @@
+# Non-secret backend configuration. Install at /etc/pocket-codex/backend.toml.
+# Secrets (msg_header_key, jwt_secret, github_client_id) come from the 0600
+# EnvironmentFile (backend.env) as PCX_-prefixed vars and override anything here.
+
+# SQLite identity/credential store.
+database_url = "sqlite:///var/lib/pocket-codex/backend.db"
+
+# The pb-mapper relay. This is BOTH what the backend dials and what /v1/relay
+# tells clients to dial, so it must be an address that resolves for them too —
+# a public name, not 127.0.0.1. Clients reach the relay directly; the relay
+# confines each account's credential to its own namespace. That requires
+# `--legacy-protocol deny` on the relay — see README.
+relay_addr = "lb7666.top:7666"
+
+# The API listener; terminates TLS in-process (tls_mode below).
+http_listen = "0.0.0.0:8443"
+
+# GitHub OAuth scope requested at login.
+github_scope = "read:user"
+
+# Public base URL the browser reaches this backend at. ONLY needed to enable the
+# web (browser-redirect) login flow, and only together with
+# PCX_GITHUB_CLIENT_SECRET (backend.env). The OAuth callback is
+# `{public_url}/auth/web/callback`, which must EXACTLY match the GitHub OAuth
+# App's registered Authorization callback URL (scheme, host, port, path).
+# Uncomment + set when enabling web login:
+#public_url = "https://lb7666.top:8443"
+
+# Session lifetimes.
+jwt_ttl_secs = 3600
+refresh_ttl_secs = 2592000
+data_idle_secs = 1800
+
+# TLS: "plain" (no TLS — local/smoke only) or "files" (static PEM, e.g. certbot).
+# Point at COPIES owned by the pcx service user: the non-root service cannot read
+# certbot's root-only /etc/letsencrypt/live/<host>/privkey.pem directly. Add a
+# certbot/Caddy renewal hook that copies fullchain/privkey into /etc/pocket-codex/
+# (0640 pcx:pcx) and runs `systemctl restart pocket-codex-backend` (certs are read
+# once at startup, so a renewal needs a restart to take effect).
+tls_mode = "files"
+tls_cert = "/etc/pocket-codex/fullchain.pem"
+tls_key = "/etc/pocket-codex/privkey.pem"

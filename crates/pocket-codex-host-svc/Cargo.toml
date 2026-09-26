@@ -1,0 +1,40 @@
+[package]
+name = "pocket-codex-host-svc"
+description = "Host-side meta service: remote-viewable codex sessions + per-thread config, exposed through the account broker."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+readme.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+pocket-codex-core = { workspace = true }
+pocket-codex-codex = { workspace = true }
+# `json` adds the Json extractor/response and `query` the Query extractor (for
+# `/fs/list?path=`) on top of the workspace axum (already linked by the bridge
+# via pocket-codex-api-proxy, so this is no new dep in the mobile artifact).
+axum = { workspace = true, features = ["json", "query"] }
+tokio = { workspace = true }
+tokio-stream = { workspace = true }
+tokio-util = { workspace = true }
+url = { workspace = true }
+percent-encoding = { workspace = true }
+uuid = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+tracing = { workspace = true }
+tower-http = { workspace = true, features = ["compression-zstd", "compression-gzip"] }
+
+[dev-dependencies]
+tempfile = "3"
+# Drive the real router over a loopback listener in the HTTP integration test —
+# the same rustls-webpki reqwest the bridge's meta client uses, so no new
+# workspace dep and the exact request path is exercised.
+reqwest = { workspace = true, features = ["zstd", "gzip"] }

@@ -1,0 +1,4 @@
+[submodule "deps/codex"]
+	path = deps/codex
+	url = git@github.com:acking-you/codex.git
+	branch = pocket-codex

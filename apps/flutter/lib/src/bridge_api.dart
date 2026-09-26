@@ -1,0 +1,1631 @@
+/// Plain Dart mirrors of the bridge DTOs (decoupled from FRB types so the
+/// UI and tests do not import generated bindings).
+library;
+
+import 'dart:typed_data';
+
+/// A discovered service on the relay.
+class ServiceEntry {
+  /// Creates a service entry.
+  const ServiceEntry({
+    required this.device,
+    required this.kind,
+    required this.name,
+    required this.key,
+  });
+
+  /// Device id segment.
+  final String device;
+
+  /// `app` or `api`.
+  final String kind;
+
+  /// Instance name segment.
+  final String name;
+
+  /// Full `pcx:<device>:<kind>:<name>` key.
+  final String key;
+}
+
+/// Status of one active local subscription.
+class SubInfo {
+  /// Creates a subscription status.
+  const SubInfo({
+    required this.key,
+    required this.localAddr,
+    required this.alive,
+  });
+
+  /// Service key being subscribed to.
+  final String key;
+
+  /// Local `host:port` the subscriber listener is bound on.
+  final String localAddr;
+
+  /// Whether the subscription task is still running.
+  final bool alive;
+}
+
+/// Result of starting local hosting. One host publishes two tunnels:
+/// `app:<name>` (codex app-server) and `api:<name>` (Responses API proxy).
+class AppServeResult {
+  /// Creates a hosting-start result.
+  const AppServeResult({
+    required this.device,
+    required this.name,
+    required this.appServiceKey,
+    required this.appListenAddr,
+    required this.apiServiceKey,
+    required this.apiListenAddr,
+    required this.metaServiceKey,
+    required this.metaListenAddr,
+    required this.pid,
+    required this.reused,
+  });
+
+  /// Device id both services registered under.
+  final String device;
+
+  /// Service instance name (shared by the app + api tunnels).
+  final String name;
+
+  /// `pcx:<device>:app:<name>` key (what discovery + `appConnect` use).
+  final String appServiceKey;
+
+  /// Loopback `host:port` codex is listening on.
+  final String appListenAddr;
+
+  /// `pcx:<device>:api:<name>` key (what an `api connect` resolves).
+  final String apiServiceKey;
+
+  /// Loopback `host:port` the in-app Responses API proxy is listening on.
+  final String apiListenAddr;
+
+  /// `pcx:<device>:meta:<name>` key (the host meta service tunnel).
+  final String metaServiceKey;
+
+  /// Loopback `host:port` the in-app meta service is listening on.
+  final String metaListenAddr;
+
+  /// The codex process id.
+  final int pid;
+
+  /// Whether an already-running host was reused instead of freshly spawned.
+  final bool reused;
+}
+
+/// Status of one local host: a codex app-server + an in-app Responses API
+/// proxy, each published through its own (independently toggleable) tunnel.
+class AppServeStatus {
+  /// Creates a hosting-status snapshot.
+  const AppServeStatus({
+    required this.name,
+    required this.device,
+    this.pid,
+    this.alive = false,
+    this.appListenAddr = '',
+    this.appServiceKey = '',
+    this.appRegistered = false,
+    this.apiListenAddr = '',
+    this.apiServiceKey = '',
+    this.apiRegistered = false,
+    this.metaListenAddr = '',
+    this.metaServiceKey = '',
+    this.metaRegistered = false,
+    this.embedded = false,
+    this.codexBinary,
+    this.proxy,
+  });
+
+  /// Service instance name.
+  final String name;
+
+  /// Device id.
+  final String device;
+
+  /// codex process id.
+  final int? pid;
+
+  /// codex is accepting on its listen port.
+  final bool alive;
+
+  /// Loopback `host:port` codex listens on.
+  final String appListenAddr;
+
+  /// `pcx:<device>:app:<name>` key.
+  final String appServiceKey;
+
+  /// The app tunnel is currently published.
+  final bool appRegistered;
+
+  /// Loopback `host:port` the API proxy listens on.
+  final String apiListenAddr;
+
+  /// `pcx:<device>:api:<name>` key.
+  final String apiServiceKey;
+
+  /// The api tunnel is currently published.
+  final bool apiRegistered;
+
+  /// Loopback `host:port` the meta service listens on.
+  final String metaListenAddr;
+
+  /// `pcx:<device>:meta:<name>` key.
+  final String metaServiceKey;
+
+  /// The meta tunnel is currently published.
+  final bool metaRegistered;
+
+  /// Legacy runtime flag; always false for external Codex hosts.
+  final bool embedded;
+
+  /// The resolved external Codex binary path.
+  final String? codexBinary;
+
+  /// Upstream proxy codex + the API proxy were started with, or `null` when
+  /// they inherit the app's environment.
+  final String? proxy;
+}
+
+/// View of persisted config (relay/key presence, locale, account state).
+class ConfigInfo {
+  /// Creates a config view.
+  const ConfigInfo({
+    required this.relay,
+    required this.hasKey,
+    this.locale,
+    this.mode = 'unconfigured',
+    this.accountLogin,
+    this.accountId,
+    this.hasAccountToken = false,
+  });
+
+  /// Configured relay `host:port`, if any.
+  final String? relay;
+
+  /// Whether a 32-byte key is stored.
+  final bool hasKey;
+
+  /// Configured UI locale (BCP-47, e.g. `en`/`zh`), or `null` to follow the
+  /// system locale.
+  final String? locale;
+
+  /// Active transport mode: `account` / `self_host` / `unconfigured`.
+  final String mode;
+
+  /// Signed-in GitHub login (account mode), if any.
+  final String? accountLogin;
+
+  /// Signed-in GitHub numeric account id, if any. The avatar URL is derived from
+  /// it (see `GitHubAvatar`); no avatar field is fetched from the backend.
+  final String? accountId;
+
+  /// Whether an account session token is stored.
+  final bool hasAccountToken;
+}
+
+/// A started GitHub device flow: show the code + URL, then poll.
+class DeviceCode {
+  /// Creates a device code.
+  const DeviceCode({
+    required this.userCode,
+    required this.verificationUri,
+    required this.pollHandle,
+    required this.intervalSecs,
+    required this.expiresInSecs,
+    required this.backend,
+  });
+
+  /// Code the user types at [verificationUri].
+  final String userCode;
+
+  /// URL the user opens to enter [userCode].
+  final String verificationUri;
+
+  /// Opaque handle passed back to [BridgeApi.accountLoginPoll].
+  final String pollHandle;
+
+  /// Minimum seconds between polls.
+  final int intervalSecs;
+
+  /// Seconds until the flow expires.
+  final int expiresInSecs;
+
+  /// Resolved backend base URL to echo back to [BridgeApi.accountLoginPoll].
+  final String backend;
+}
+
+/// Outcome of one device-flow poll. [status] is `pending` / `slow_down` /
+/// `authorized` / `expired` / `denied`; [login] is set only when authorized.
+class AccountPoll {
+  /// Creates a poll outcome.
+  const AccountPoll({required this.status, this.login, this.accountId});
+
+  /// Poll status string.
+  final String status;
+
+  /// Signed-in login, when authorized.
+  final String? login;
+
+  /// GitHub account id, when authorized and known.
+  final String? accountId;
+}
+
+/// The signed-in account identity.
+class AccountUser {
+  /// Creates an account user.
+  const AccountUser({required this.login, this.accountId});
+
+  /// GitHub login/handle.
+  final String login;
+
+  /// GitHub account id, if known.
+  final String? accountId;
+}
+
+/// A started web (browser-redirect) login: open [authorizeUrl] in a browser,
+/// capture the redirect back to the app, check its `state` equals [state], then
+/// trade its `exchange_code` (with [codeVerifier]) via
+/// [BridgeApi.accountWebLoginExchange]. [state] and [codeVerifier] stay
+/// on-device — only the verifier's hashed challenge ever reaches the backend.
+class WebLoginStart {
+  /// Creates a started web login.
+  const WebLoginStart({
+    required this.authorizeUrl,
+    required this.state,
+    required this.codeVerifier,
+    required this.backend,
+  });
+
+  /// GitHub authorization URL to open in a browser.
+  final String authorizeUrl;
+
+  /// CSRF state to match against the redirect's `state` query param.
+  final String state;
+
+  /// PKCE verifier to pass to [BridgeApi.accountWebLoginExchange].
+  final String codeVerifier;
+
+  /// Resolved backend base URL to echo back to
+  /// [BridgeApi.accountWebLoginExchange].
+  final String backend;
+}
+
+/// One service in the account (the `pcxu:` prefix already stripped).
+class AccountService {
+  /// Creates an account service.
+  const AccountService({
+    required this.device,
+    required this.kind,
+    required this.name,
+  });
+
+  /// Device id segment.
+  final String device;
+
+  /// `app` or `api`.
+  final String kind;
+
+  /// Instance name segment.
+  final String name;
+
+  /// The local `pcx:<device>:<kind>:<name>` key the app/session layer uses.
+  String get key => 'pcx:$device:$kind:$name';
+}
+
+/// A live app-server event (one JSON-RPC notification), flattened for the UI.
+class AppEvent {
+  /// Creates an app event.
+  const AppEvent({
+    required this.kind,
+    this.threadId,
+    this.itemId,
+    this.itemType,
+    this.title,
+    this.text,
+    this.images = const [],
+    this.requestId,
+    required this.raw,
+  });
+
+  /// JSON-RPC method, e.g. `turn/started`, `item/agentMessage/delta`,
+  /// `turn/completed`.
+  final String kind;
+
+  /// Thread id the event belongs to, when present.
+  final String? threadId;
+
+  /// Item id the event refers to, when present.
+  final String? itemId;
+
+  /// Item type tag when this event carries an item (`agentMessage`,
+  /// `commandExecution`, `webSearch`, `mcpToolCall`, `fileChange`,
+  /// `reasoning`, …); `null` for turn-level events.
+  final String? itemType;
+
+  /// One-line summary for tool/activity items (command, query, tool name…).
+  final String? title;
+
+  /// Text payload (a streaming delta or an item's body/detail).
+  final String? text;
+
+  /// Image URLs attached to a `userMessage` item: `data:image/...` URLs
+  /// render inline; a host-local path renders as a filename chip. Empty for
+  /// every other event.
+  final List<String> images;
+
+  /// Token to answer a server approval request via [BridgeApi.appRespondApproval].
+  final String? requestId;
+
+  /// Full params JSON for fields not modelled above.
+  final String raw;
+}
+
+/// One captured runtime log line for the in-app log viewer.
+class LogLine {
+  /// Creates a log line.
+  const LogLine({
+    required this.level,
+    required this.target,
+    required this.message,
+    required this.timestampMs,
+  });
+
+  /// `TRACE` / `DEBUG` / `INFO` / `WARN` / `ERROR`.
+  final String level;
+
+  /// Event target (crate / module path).
+  final String target;
+
+  /// The rendered message plus any structured fields.
+  final String message;
+
+  /// Capture time, unix milliseconds.
+  final int timestampMs;
+}
+
+/// One in-flight retry of a host meta request.
+class RetryProgress {
+  /// Creates a retry progress tick.
+  const RetryProgress({required this.attempt, required this.maxAttempts});
+
+  /// Attempts made so far (1-based).
+  final int attempt;
+
+  /// Total attempt budget before the request gives up.
+  final int maxAttempts;
+}
+
+/// Summary metadata for one app-server thread.
+class ThreadMeta {
+  /// Creates thread metadata.
+  const ThreadMeta({
+    required this.id,
+    required this.preview,
+    required this.cwd,
+    required this.updatedAt,
+    this.name,
+  });
+
+  /// Thread id.
+  final String id;
+
+  /// Preview (usually the first user message).
+  final String preview;
+
+  /// User-set title, or null when the conversation was never renamed.
+  final String? name;
+
+  /// Working directory — the project this thread controls.
+  final String cwd;
+
+  /// Unix seconds of last update.
+  final int updatedAt;
+
+  /// The name the user gave this conversation, if any — trimmed, and null
+  /// rather than empty so callers can `??` straight through to the preview.
+  String? get title {
+    final n = name?.trim();
+    return (n == null || n.isEmpty) ? null : n;
+  }
+
+  /// Copy with [name] replaced. Used to reflect a rename locally without
+  /// waiting for the next `thread/list`.
+  ThreadMeta withName(String? name) => ThreadMeta(
+    id: id,
+    preview: preview,
+    name: name,
+    cwd: cwd,
+    updatedAt: updatedAt,
+  );
+}
+
+/// A thread's recovered history plus whether a turn is still running, and the
+/// metadata the status bar / git chip seed from on open.
+class ThreadHistory {
+  /// Creates a thread history.
+  const ThreadHistory({
+    required this.items,
+    required this.running,
+    this.activeTurnId,
+    this.historyEpoch,
+    this.branch,
+    this.cwd,
+    this.tokensUsed,
+    this.contextWindow,
+    this.collaborationMode,
+    this.reasoningEffort,
+    this.model,
+    this.modelProvider,
+    this.approvalPolicy,
+    this.approvalsReviewer,
+    this.serviceTier,
+    this.sandboxMode,
+    this.configConfirmed = false,
+    this.hasOlder = false,
+    this.turns = const [],
+    this.firstTurnId,
+    this.turnPages = const [],
+  });
+
+  /// Conversation items, oldest first.
+  final List<ThreadItem> items;
+
+  /// Whether the most recent turn is still in progress.
+  final bool running;
+
+  /// Identity from the same server snapshot that established [running].
+  final String? activeTurnId;
+
+  /// Source history generation; replacement invalidates retained windows.
+  final String? historyEpoch;
+
+  /// Current git branch of the thread's cwd, if it's a repo.
+  final String? branch;
+
+  /// The thread's resolved working directory (for git diff / status).
+  final String? cwd;
+
+  /// Tokens currently occupying the model context window.
+  final int? tokensUsed;
+
+  /// The model's context-window size in tokens.
+  final int? contextWindow;
+
+  /// The thread's sticky collaboration mode (`plan` / `default`), so the UI
+  /// plan toggle reflects the server's real state instead of guessing.
+  final String? collaborationMode;
+
+  /// The thread's current reasoning effort (`low`/`medium`/`high`), so the UI
+  /// can display the "thinking level" the thread runs with. Sourced from the
+  /// thread/resume response (thread/read doesn't expose it).
+  final String? reasoningEffort;
+
+  /// The effective model id the thread runs with, per the server (from the
+  /// start/resume response, kept fresh by `thread/settings/updated`). Null
+  /// when the server never reported it (older servers).
+  final String? model;
+
+  /// Provider of the effective model (e.g. `openai`), when reported.
+  final String? modelProvider;
+
+  /// The effective approval policy (`untrusted`/`on-failure`/`on-request`/
+  /// `never`/`granular`), when reported.
+  final String? approvalPolicy;
+
+  /// Effective reviewer (`user` or `auto_review`).
+  final String? approvalsReviewer;
+
+  /// Effective service tier.
+  final String? serviceTier;
+
+  /// The effective sandbox mode (`read-only`/`workspace-write`/
+  /// `danger-full-access`/`external-sandbox`), when reported.
+  final String? sandboxMode;
+
+  /// Whether a live `thread/settings/updated` notification has confirmed this
+  /// config (vs only a start/resume snapshot).
+  final bool configConfirmed;
+
+  /// Whether earlier items remain unread — [BridgeApi.appThreadOlderPage]
+  /// fetches them. False for a thread whose history arrives whole.
+  final bool hasOlder;
+
+  /// One entry per turn in the WHOLE thread, oldest first, including turns
+  /// whose items aren't loaded yet. The turn rail shows a conversation's shape,
+  /// so it needs every turn even before their bodies are read.
+  final List<TurnSummary> turns;
+
+  /// Actual oldest turn, confirmed by exhausting the server's summary cursor.
+  final String? firstTurnId;
+
+  /// Cached windows fetched through timeline navigation.
+  final List<TurnItemsPage> turnPages;
+}
+
+/// A bounded ascending window within one selected turn.
+class TurnItemsPage {
+  /// Creates a turn window.
+  const TurnItemsPage({
+    required this.turnId,
+    required this.items,
+    required this.hasMore,
+  });
+
+  /// Owning turn.
+  final String turnId;
+
+  /// Loaded prefix in chronological order.
+  final List<ThreadItem> items;
+
+  /// Whether the same turn has more items after this window.
+  final bool hasMore;
+}
+
+/// A turn reduced to what the rail shows: the question, and how it was answered.
+class TurnSummary {
+  /// Creates a turn summary.
+  const TurnSummary({
+    required this.turnId,
+    this.userText = '',
+    this.assistantText = '',
+    this.loaded = false,
+  });
+
+  /// Id of the turn, for fetching its items on demand.
+  final String turnId;
+
+  /// The user's message that opened the turn; empty when it had none.
+  final String userText;
+
+  /// The turn's final agent message; empty when it produced no prose.
+  final String assistantText;
+
+  /// Whether this turn's items are already in the transcript.
+  final bool loaded;
+}
+
+/// One page of older items, and whether history continues before them.
+class OlderPage {
+  /// Creates an older page.
+  const OlderPage({required this.items, required this.hasOlder});
+
+  /// Older items, oldest first, to prepend to the transcript.
+  final List<ThreadItem> items;
+
+  /// Whether older items still remain.
+  final bool hasOlder;
+}
+
+/// The server-reported runtime configuration of a thread — what its turns
+/// actually run with. Every field is null when the server hasn't said (never
+/// a guess), so the UI can distinguish "server default" from "unknown".
+class ThreadRuntimeConfig {
+  /// Creates a runtime config snapshot.
+  const ThreadRuntimeConfig({
+    this.model,
+    this.modelProvider,
+    this.reasoningEffort,
+    this.approvalPolicy,
+    this.approvalsReviewer,
+    this.serviceTier,
+    this.sandboxMode,
+    this.collaborationMode,
+    this.confirmedByUpdate = false,
+  });
+
+  /// Effective model id.
+  final String? model;
+
+  /// Provider of the effective model.
+  final String? modelProvider;
+
+  /// Effective reasoning effort.
+  final String? reasoningEffort;
+
+  /// Effective approval policy.
+  final String? approvalPolicy;
+
+  /// Effective reviewer (`user` or `auto_review`).
+  final String? approvalsReviewer;
+
+  /// Effective service tier.
+  final String? serviceTier;
+
+  /// Effective sandbox mode (kebab wire string).
+  final String? sandboxMode;
+
+  /// Effective collaboration mode (`plan`/`default`), when reported.
+  final String? collaborationMode;
+
+  /// True once a live `thread/settings/updated` confirmed this config.
+  final bool confirmedByUpdate;
+}
+
+/// One model offered by the app-server.
+class ModelInfo {
+  /// Creates model info.
+  const ModelInfo({
+    required this.id,
+    required this.displayName,
+    required this.description,
+    this.supportedReasoningEfforts = const [],
+    this.defaultReasoningEffort,
+    this.supportedServiceTiers = const [],
+    this.defaultServiceTier,
+    this.isDefault = false,
+  });
+
+  /// Model id (used as the `model` param).
+  final String id;
+
+  /// Human-readable name.
+  final String displayName;
+
+  /// Short description.
+  final String description;
+
+  /// Reasoning efforts this model accepts (`minimal`/`low`/`medium`/`high`/
+  /// `xhigh`/…), so the effort picker offers only the levels this model supports.
+  final List<String> supportedReasoningEfforts;
+
+  /// The model's default reasoning effort, if any.
+  final String? defaultReasoningEffort;
+
+  /// Service tier ids advertised by the model catalog.
+  final List<String> supportedServiceTiers;
+
+  /// Catalog default service tier.
+  final String? defaultServiceTier;
+
+  /// Whether this is the server default model.
+  final bool isDefault;
+
+  /// Whether this model advertises the Fast service tier.
+  bool get supportsFast => supportedServiceTiers.contains('priority');
+}
+
+/// One materialised conversation item from `thread/read`.
+class ThreadItem {
+  /// Creates a thread item.
+  const ThreadItem({
+    required this.id,
+    required this.itemType,
+    required this.title,
+    required this.text,
+    this.images = const [],
+    this.turnId = '',
+    this.turnCompletedAt,
+    this.turnDurationMs,
+    this.questionsJson,
+  });
+
+  /// Structured asynchronous questions from an agent message, as JSON.
+  final String? questionsJson;
+
+  /// Item id.
+  final String id;
+
+  /// Item type tag (`userMessage` / `agentMessage` / `commandExecution` /
+  /// `webSearch` / `mcpToolCall` / `fileChange` / `reasoning` / …).
+  final String itemType;
+
+  /// One-line summary for tool/activity items.
+  final String title;
+
+  /// Body / detail text.
+  final String text;
+
+  /// Image URLs attached to a `userMessage`: `data:image/...` URLs render
+  /// inline; a host-local path renders as a filename chip. Empty for every
+  /// other item kind.
+  final List<String> images;
+
+  /// Id of the turn this item belongs to — the server's own boundary, since
+  /// `thread/read` nests items under their turn. Empty when unknown (an item
+  /// recovered from the live stream buffer, or read from a rollout file on
+  /// disk, neither of which carries a turn envelope).
+  final String turnId;
+
+  /// Unix seconds when this item's turn completed; null while it still runs, or
+  /// when the source carried no turn.
+  final int? turnCompletedAt;
+
+  /// This item's turn duration in milliseconds, when the server reported it.
+  final int? turnDurationMs;
+}
+
+/// A process holding a session's rollout file open — a would-be force-takeover
+/// target.
+class Holder {
+  /// Creates a holder.
+  const Holder({required this.pid, required this.name});
+
+  /// Operating-system process id.
+  final int pid;
+
+  /// Process image name (e.g. `codex.exe`).
+  final String name;
+}
+
+/// One codex session discovered under the shared `CODEX_HOME`, annotated with
+/// whether it is safe to resume.
+class LocalSession {
+  /// Creates a local session entry.
+  const LocalSession({
+    required this.threadId,
+    this.cwd,
+    required this.preview,
+    this.source,
+    required this.updatedAt,
+    required this.turnState,
+    required this.heldOpen,
+    required this.safety,
+    required this.allowsResume,
+    required this.requiresTakeover,
+  });
+
+  /// Thread / conversation id.
+  final String threadId;
+
+  /// Working directory the session controls, when recorded.
+  final String? cwd;
+
+  /// Best-effort first-user-message preview.
+  final String preview;
+
+  /// Originating client (`cli` / `vscode` / …), when recorded.
+  final String? source;
+
+  /// Last-modified time of the rollout, unix seconds.
+  final int updatedAt;
+
+  /// Most-recent-turn state (`empty`/`completed`/`aborted`/`incomplete`).
+  final String turnState;
+
+  /// Whether the rollout is currently held open by a live process.
+  final bool heldOpen;
+
+  /// Resume-safety tag (`resumable`/`resumableUnfinished`/`ownedRunning`/
+  /// `ownedIdle`).
+  final String safety;
+
+  /// Whether the UI may offer a resume action (false only while a turn is
+  /// actively running).
+  final bool allowsResume;
+
+  /// Whether resuming requires a force takeover (a live owner must be evicted
+  /// first).
+  final bool requiresTakeover;
+}
+
+/// One session's liveness detail, including the processes a force takeover
+/// would terminate (Pocket-Codex's own app-server already excluded).
+class SessionLiveness {
+  /// Creates a liveness view.
+  const SessionLiveness({
+    required this.threadId,
+    required this.turnState,
+    required this.heldOpen,
+    required this.safety,
+    required this.allowsResume,
+    required this.requiresTakeover,
+    required this.holders,
+  });
+
+  /// Thread / conversation id.
+  final String threadId;
+
+  /// Most-recent-turn state tag.
+  final String turnState;
+
+  /// Whether the rollout is currently held open.
+  final bool heldOpen;
+
+  /// Resume-safety tag.
+  final String safety;
+
+  /// Whether the UI may offer a resume action.
+  final bool allowsResume;
+
+  /// Whether resuming requires a force takeover.
+  final bool requiresTakeover;
+
+  /// Processes a force takeover would attempt to terminate.
+  final List<Holder> holders;
+}
+
+/// One full read-only transcript + ownership snapshot from the host's live
+/// session follow stream.
+class SessionFollowUpdate {
+  /// Creates a live session snapshot.
+  const SessionFollowUpdate({
+    required this.liveness,
+    required this.items,
+    this.historyRevision,
+  });
+
+  /// Opaque revision when history is read through app-server pagination.
+  final String? historyRevision;
+
+  /// Current ownership and resume-safety state.
+  final SessionLiveness liveness;
+
+  /// Full materialised transcript at this rollout revision.
+  final List<ThreadItem> items;
+}
+
+/// Outcome of a force-resume: which holders were killed / survived, and whether
+/// the subsequent resume took.
+class ForceResumeReport {
+  /// Creates a force-resume report.
+  const ForceResumeReport({
+    required this.killed,
+    required this.survived,
+    required this.stillHeld,
+    required this.resumed,
+    this.resumeError,
+  });
+
+  /// Holders that were successfully terminated.
+  final List<Holder> killed;
+
+  /// Holders the kill could not reach.
+  final List<Holder> survived;
+
+  /// Whether the rollout is still held open after the attempt (the resume
+  /// proceeded regardless).
+  final bool stillHeld;
+
+  /// Whether the subsequent `thread/resume` succeeded.
+  final bool resumed;
+
+  /// The resume error message, when [resumed] is false.
+  final String? resumeError;
+}
+
+/// Per-thread session config persisted on the host (model / reasoning effort /
+/// permission mode / plan mode). Every field is nullable: null means "no stored
+/// preference", so the UI falls back to its own default.
+class ThreadConfig {
+  /// Creates a thread config.
+  const ThreadConfig({
+    this.model,
+    this.reasoningEffort,
+    this.permissionMode,
+    this.serviceTier,
+    this.planMode,
+  });
+
+  /// Selected model id, when pinned for this thread.
+  final String? model;
+
+  /// Reasoning-effort tag (`minimal`/`low`/`medium`/`high`), when set.
+  final String? reasoningEffort;
+
+  /// Permission / approval mode tag, when set.
+  final String? permissionMode;
+
+  /// Requested service tier (`priority` or explicit `default`).
+  final String? serviceTier;
+
+  /// Whether plan mode is on for this thread, when set.
+  final bool? planMode;
+
+  /// Whether every field is unset (no stored preference at all).
+  bool get isEmpty =>
+      model == null &&
+      reasoningEffort == null &&
+      permissionMode == null &&
+      serviceTier == null &&
+      planMode == null;
+
+  /// A copy with the given fields overridden.
+  ThreadConfig copyWith({
+    String? model,
+    String? reasoningEffort,
+    String? permissionMode,
+    String? serviceTier,
+    bool? planMode,
+  }) => ThreadConfig(
+    model: model ?? this.model,
+    reasoningEffort: reasoningEffort ?? this.reasoningEffort,
+    permissionMode: permissionMode ?? this.permissionMode,
+    serviceTier: serviceTier ?? this.serviceTier,
+    planMode: planMode ?? this.planMode,
+  );
+}
+
+/// A host's project-folder configuration: the roots the remote folder browser
+/// is confined to, and the default project new conversations open in. Both are
+/// host-side (shared to every device via the meta tunnel) so a phone starting a
+/// new session sees the same folders the desktop offers.
+class ProjectConfig {
+  /// Creates a project config.
+  const ProjectConfig({this.projectRoots = const [], this.defaultProject});
+
+  /// Absolute host paths the user configured as project roots.
+  final List<String> projectRoots;
+
+  /// Absolute host path new conversations default their cwd to (null = the
+  /// codex default). A configured root, or a folder within one.
+  final String? defaultProject;
+
+  /// Whether any project roots are configured (gates the tree browser).
+  bool get hasRoots => projectRoots.isNotEmpty;
+}
+
+/// One browsable child directory of a host folder, from [BridgeApi.metaListDir].
+class HostDirEntry {
+  /// Creates a directory entry.
+  const HostDirEntry({
+    required this.name,
+    required this.path,
+    this.isGitRepo = false,
+  });
+
+  /// The directory's own name (final path component).
+  final String name;
+
+  /// Absolute host path — browse into it, or use it as a session's cwd.
+  final String path;
+
+  /// Whether the directory is a git repository (a project hint).
+  final bool isGitRepo;
+}
+
+/// One file in a host directory, from [BridgeApi.metaListFiles].
+class HostFileEntry {
+  /// Creates a file entry.
+  const HostFileEntry({
+    required this.name,
+    required this.path,
+    required this.size,
+    required this.mtime,
+  });
+
+  /// The file's own name (final path component).
+  final String name;
+
+  /// Absolute host path.
+  final String path;
+
+  /// Size in bytes.
+  final int size;
+
+  /// Last-modified time in unix seconds (0 when unavailable).
+  final int mtime;
+}
+
+/// What the external Codex has on disk in `CODEX_HOME`, for the setup wizard.
+class CodexSetupStatus {
+  /// Creates a codex setup status.
+  const CodexSetupStatus({
+    required this.codexHome,
+    required this.hasConfig,
+    required this.hasAuth,
+    required this.hasCustomProvider,
+    this.authMode,
+    required this.needsSetup,
+    required this.promptVariant,
+  });
+
+  /// Resolved `CODEX_HOME` (display path).
+  final String codexHome;
+
+  /// `config.toml` exists.
+  final bool hasConfig;
+
+  /// A credential exists (`auth.json` or `CODEX_ACCESS_TOKEN`).
+  final bool hasAuth;
+
+  /// A non-OpenAI custom provider is configured (authorizes turns on its own,
+  /// so no `codex login` is required).
+  final bool hasCustomProvider;
+
+  /// `auth.json`'s `auth_mode` (`apikey` / `chatgpt` / …), when present.
+  final String? authMode;
+
+  /// Nothing lets codex authenticate a model call yet → show the wizard.
+  final bool needsSetup;
+
+  /// Active system-prompt variant (`default` / `non_degraded` / `custom`).
+  final String promptVariant;
+}
+
+/// A started ChatGPT login on the external Codex. [mode] is `browser` (open
+/// [authUrl] and poll) or `device` (open [verificationUrl], show [userCode], and
+/// poll) — codex falls back to device code when it can't bind its local OAuth
+/// callback port. Poll [BridgeApi.codexAuthStatus] until authenticated either way.
+class CodexLoginStart {
+  /// Creates a started codex login.
+  const CodexLoginStart({
+    required this.mode,
+    required this.loginId,
+    this.authUrl,
+    this.verificationUrl,
+    this.userCode,
+  });
+
+  /// `browser` or `device`.
+  final String mode;
+
+  /// Opaque id to pass back to [BridgeApi.codexLoginCancel].
+  final String loginId;
+
+  /// Browser flow: URL to open in a browser. Null for the device flow.
+  final String? authUrl;
+
+  /// Device flow: URL to open. Null for the browser flow.
+  final String? verificationUrl;
+
+  /// Device flow: one-time code the user enters. Null for the browser flow.
+  final String? userCode;
+}
+
+/// codex auth status for one app-server.
+class CodexAuthStatus {
+  /// Creates a codex auth status.
+  const CodexAuthStatus({required this.authenticated, this.method});
+
+  /// Whether a credential is active (login complete / provider key present).
+  final bool authenticated;
+
+  /// Auth method when signed in (`chatgpt` / `apikey` / …).
+  final String? method;
+}
+
+/// The whole engine surface the UI is allowed to touch. One real impl wraps
+/// flutter_rust_bridge; a fake backs widget tests.
+/// Controller-wide disposable disk-cache usage.
+class HistoryCacheStatus {
+  const HistoryCacheStatus({required this.limitMb, required this.usedBytes});
+  final int limitMb;
+  final int usedBytes;
+}
+
+/// Bounded file bytes and the original file size.
+class FilePreviewData {
+  const FilePreviewData({required this.bytes, required this.totalSize});
+  final Uint8List bytes;
+  final int totalSize;
+  bool get truncated => totalSize > bytes.length;
+}
+
+abstract interface class BridgeApi {
+  /// Read only local disk; cached history is display-only until synchronized.
+  Future<ThreadHistory?> appHistoryCached(String serviceKey, String threadId);
+  Future<bool> appHistorySyncPrepare(String serviceKey);
+  Future<void> appHistoryPrefetch(String serviceKey, String threadId);
+  Future<void> appHistoryFocus(String serviceKey, String? threadId);
+  Future<HistoryCacheStatus> historyCacheStatus();
+  Future<void> historyCacheSetLimit(int limitMb);
+
+  /// Current persisted config.
+  Future<ConfigInfo> getConfig();
+
+  /// Set the relay `host:port` and persist.
+  Future<void> setRelay(String relay);
+
+  /// Set the 32-byte MSG_HEADER_KEY and persist.
+  Future<void> setKey(String key);
+
+  /// Import a `pcx1:` share string; returns the relay. Throws on bad input.
+  Future<String> importConfig(String text);
+
+  /// Export the current relay+key as a `pcx1:` share string.
+  Future<String> exportConfig();
+
+  /// Discover services on the configured relay.
+  Future<List<ServiceEntry>> discoverServices();
+
+  /// Subscribe to an API service, exposing it on `127.0.0.1:<localPort>`.
+  Future<SubInfo> apiSubscribe(String serviceKey, int localPort);
+
+  /// Stop an API-service subscription.
+  Future<void> apiUnsubscribe(String serviceKey);
+
+  /// List all active subscriptions.
+  Future<List<SubInfo>> subscriptions();
+
+  /// Persist the UI locale (BCP-47, e.g. `en`/`zh`). An empty string clears
+  /// it, meaning follow the system locale.
+  Future<void> setLocale(String locale);
+
+  // --- external Codex bootstrap: provider setup, ChatGPT login, system prompt ---
+
+  /// Detect whether the external Codex has a usable provider + credentials. Drives
+  /// the first-run setup wizard: `needsSetup` is true when neither a login nor a
+  /// custom provider is configured.
+  Future<CodexSetupStatus> codexSetupStatus();
+
+  /// Configure a minimal custom OpenAI-compatible provider (base URL + API key)
+  /// for the external Codex — writes `$CODEX_HOME/config.toml`, no login needed.
+  /// [model] is optional (a sensible default is used when null/blank).
+  Future<void> codexSetupProvider({
+    required String baseUrl,
+    required String apiKey,
+    String? model,
+  });
+
+  /// The active external-Codex system-prompt variant (`default` / `non_degraded` /
+  /// `custom`).
+  Future<String> codexPromptVariant();
+
+  /// Switch the external-Codex system prompt. `non_degraded` drops the commentary /
+  /// intermediary-update mandates that can starve reasoning (openai/codex#30364);
+  /// `default` restores codex's built-in prompt.
+  Future<void> codexSetPromptVariant(String variant);
+
+  /// Begin codex's official ChatGPT login on the app-server behind [serviceKey]
+  /// (a connected host). Open the returned URL in a browser; codex writes its
+  /// own `auth.json`. Poll [codexAuthStatus] until authenticated.
+  Future<CodexLoginStart> codexLoginChatgptStart(String serviceKey);
+
+  /// Poll the codex auth status for the app-server behind [serviceKey].
+  Future<CodexAuthStatus> codexAuthStatus(String serviceKey);
+
+  /// Cancel an in-flight ChatGPT login (from [codexLoginChatgptStart]).
+  Future<void> codexLoginCancel(String serviceKey, String loginId);
+
+  /// Sign the external Codex out (revoke + delete its `auth.json`) on [serviceKey].
+  Future<void> codexLogout(String serviceKey);
+
+  // --- Hosted account (GitHub device-flow login) ---
+
+  /// Begin a GitHub device-flow login. [backend] overrides the configured /
+  /// default backend (remembered on success). Show the returned code + URL,
+  /// then poll with [accountLoginPoll].
+  Future<DeviceCode> accountLoginStart({String? backend});
+
+  /// Poll a device flow once. On `authorized` the session is persisted and the
+  /// app switches to account mode.
+  Future<AccountPoll> accountLoginPoll(String pollHandle, String backend);
+
+  /// Begin a web (browser-redirect) GitHub login — the convenient default.
+  /// [redirectUri] is the platform-specific callback the browser is sent back to
+  /// (the app's `pocketcodex://` scheme on mobile/macOS, a `http://localhost:…`
+  /// loopback on Windows/Linux). [backend] overrides the configured / default
+  /// backend (remembered on a successful exchange). Open the returned
+  /// `authorizeUrl`, then call [accountWebLoginExchange].
+  Future<WebLoginStart> accountWebLoginStart({
+    required String redirectUri,
+    String? backend,
+  });
+
+  /// Redeem the one-time [exchangeCode] from the browser redirect (with its PKCE
+  /// [codeVerifier]) for a session. On success the session is persisted and the
+  /// app switches to account mode; returns the signed-in identity.
+  Future<AccountUser> accountWebLoginExchange({
+    required String exchangeCode,
+    required String codeVerifier,
+    required String backend,
+  });
+
+  /// The signed-in user (verified against the backend), or `null` if not signed
+  /// in.
+  Future<AccountUser?> accountCurrentUser();
+
+  /// Sign out: revoke the refresh token (best effort) and clear the session.
+  Future<void> accountLogout();
+
+  /// List the account's services from the backend.
+  Future<List<AccountService>> accountServices();
+
+  /// Deregister one of the account's services from the relay (best-effort; a
+  /// still-running host re-registers shortly after). [kind] is 'app' or 'api'.
+  Future<void> accountDeregisterService({
+    required String device,
+    required String kind,
+    required String name,
+  });
+
+  // --- Local hosting (desktop): run a local codex app-server + API proxy ---
+
+  /// Start hosting under the signed-in account. Spawns (or reuses) codex on
+  /// `127.0.0.1:<port>` and an in-app Responses API proxy, publishing both
+  /// `app:<name>` and `api:<name>`. [binaryOverride] points at the codex binary
+  /// when it isn't on `PATH` (remembered for next time); [proxy] is the upstream
+  /// proxy both use to reach chatgpt.com (`null` = inherit env). Re-hosting a
+  /// live name just re-registers any dropped tunnels. Desktop only.
+  Future<AppServeResult> appServeStart({
+    required int port,
+    String? binaryOverride,
+    String? name,
+    String? proxy,
+    required bool embedded,
+  });
+
+  /// Snapshot of every local host (for the status cards + periodic re-probe).
+  Future<List<AppServeStatus>> appServeStatus();
+
+  /// Legacy endpoint returning `unavailable`; no built-in engine is bundled.
+  Future<String> embeddedCodexVersion();
+
+  /// Take one tunnel ([kind] = 'app' or 'api') of a local host off the relay
+  /// without stopping the host — a reversible unpublish. The codex / API proxy
+  /// keep running; [appServeReregister] re-publishes it instantly.
+  Future<void> appServeDeregister({required String name, required String kind});
+
+  /// Re-publish a previously deregistered tunnel ([kind] = 'app'/'api') of a
+  /// still-running local host.
+  Future<void> appServeReregister({required String name, required String kind});
+
+  /// Fully stop one local host by name (both tunnels + watchdog + API proxy, and
+  /// stops codex).
+  Future<void> appServeStop(String name);
+
+  /// Stop every local host (called on app quit so a real quit leaves no orphan).
+  Future<void> appServeStopAll();
+
+  /// The resolved codex binary path (persisted config → `PATH`), or `null` so
+  /// the UI can prompt the user to point at one.
+  Future<String?> codexLocate();
+
+  // --- App-server remote control ---
+
+  /// Connect to an app-server service: subscribe on `127.0.0.1:<localPort>`,
+  /// open the JSON-RPC websocket and run the `initialize` handshake. Pass
+  /// `localPort: 0` to let the bridge assign a free OS port per service (so
+  /// several services can coexist).
+  Future<void> appConnect(String serviceKey, int localPort);
+
+  /// Whether a live app-server session exists for [serviceKey].
+  bool appIsConnected(String serviceKey);
+
+  /// Disconnect the app-server session and its pb-mapper subscription.
+  Future<void> appDisconnect(String serviceKey);
+
+  /// Probe whether an app-server is actually REACHABLE (its backend answers a
+  /// handshake) rather than merely registered on the relay. The services list
+  /// uses this so a registered-but-dead app-server shows as unreachable instead
+  /// of a false "online". A live session short-circuits to true.
+  Future<bool> appProbe(String serviceKey);
+
+  /// Why [appProbe] found a service unreachable, or null when it is reachable.
+  ///
+  /// A bare false can only be reported as "the app-server didn't respond", which
+  /// is misleading when the tunnel answered and REFUSED the handshake — a relay
+  /// rejecting a missing or stale authentication code needs a different fix from
+  /// a dead backend, and the user can't tell them apart otherwise.
+  Future<String?> appProbeReason(String serviceKey);
+
+  /// Probe whether an API proxy is actually reachable — its host answers a
+  /// minimal HTTP request — rather than merely registered on the relay, so a
+  /// dead-but-registered proxy reads unreachable instead of a false "online".
+  Future<bool> apiProbe(String serviceKey);
+
+  /// Health-check an app-server THIS machine hosts itself, by its loopback
+  /// app-listen address (e.g. `127.0.0.1:18080`). A direct `initialize`
+  /// handshake with no relay hop, so — unlike a bare port-open check — a wedged
+  /// or half-open codex (still accepting sockets but never answering RPC) reads
+  /// false instead of a misleading "running". Fast because it stays on loopback.
+  Future<bool> appProbeLocal(String localAddr);
+
+  /// Health-check an API proxy THIS machine hosts itself, by its loopback
+  /// api-listen address — a direct minimal HTTP request, no relay hop, so a
+  /// local host's API tunnel reads "online" the instant its proxy is up rather
+  /// than after a slower transient relay round-trip.
+  Future<bool> apiProbeLocal(String localAddr);
+
+  /// Live event stream for [serviceKey] (turn/item notifications).
+  Stream<AppEvent> appEvents(String serviceKey);
+
+  /// Captured `tracing` events for the in-app log viewer: retained recent
+  /// history (oldest first) followed by every new event live.
+  Stream<LogLine> logEvents();
+
+  /// Retry progress for host meta requests. Notifications only — the request's
+  /// own result still arrives through whichever call was made; this exists so a
+  /// wait can say "retrying 2/10" instead of looking frozen.
+  Stream<RetryProgress> metaRetryEvents();
+
+  /// List threads known to the app-server.
+  Future<List<ThreadMeta>> appThreadList(String serviceKey);
+
+  /// List the models the app-server offers.
+  Future<List<ModelInfo>> appModelList(String serviceKey);
+
+  /// Read the account rate-limit / quota snapshot as raw JSON (5h + weekly
+  /// windows). Parsed on the Dart side since the shape is nested and volatile.
+  Future<String> appRateLimits(String serviceKey);
+
+  /// Unified diff of the repo at [cwd] vs its remote default branch. Empty when
+  /// the cwd isn't a git repo or there are no changes.
+  Future<String> appGitDiff(String serviceKey, String cwd);
+
+  /// Start a manual conversation compaction; the server emits a
+  /// `thread/compacted` event when done.
+  Future<void> appCompact(String serviceKey, String threadId);
+
+  /// A one-line gist of where a thread got to (the first sentence of its most
+  /// recent agent reply), or null when it has produced none.
+  ///
+  /// Its own call because `thread/list` carries no summary — the only source is
+  /// a full thread read, so callers fetch these lazily per visible row rather
+  /// than for every conversation.
+  Future<String?> appThreadSummary(String serviceKey, String threadId);
+
+  /// Rename a conversation. The app-server persists the title, so it follows
+  /// the thread rather than the device; an empty [name] clears it and the UI
+  /// falls back to the thread preview.
+  Future<void> appSetThreadName(
+    String serviceKey,
+    String threadId,
+    String name,
+  );
+
+  /// Start a new thread / project. [approvalPolicy] is one of
+  /// `untrusted`/`on-failure`/`on-request`/`never`; [sandbox] is one of
+  /// `read-only`/`workspace-write`/`danger-full-access`. Returns the id.
+  Future<String> appThreadStart(
+    String serviceKey, {
+    String? model,
+    String? cwd,
+    String? approvalPolicy,
+    String? approvalsReviewer,
+    String? serviceTier,
+    String? sandbox,
+  });
+
+  /// Resume an existing thread (load it into the session) before reading it or
+  /// sending turns; otherwise the server reports "thread not found".
+  Future<void> appThreadResume(String serviceKey, String threadId);
+
+  /// Read a thread's history (items oldest first) and whether a turn is still
+  /// running, so re-opening an in-flight thread restores its live state.
+  ///
+  /// A paginated thread returns only its newest turns' items, with
+  /// [ThreadHistory.hasOlder] set and [ThreadHistory.turns] naming every turn.
+  Future<ThreadHistory> appThreadRead(
+    String serviceKey,
+    String threadId, {
+    bool includeTurnPages = true,
+  });
+
+  /// One page further back through a paginated thread's history. Returns an
+  /// empty page when the thread reads whole or is already at its start.
+  Future<OlderPage> appThreadOlderPage(String serviceKey, String threadId);
+
+  /// Read a selected turn's cached prefix or continue its ascending cursor.
+  Future<TurnItemsPage> appThreadTurnPage(
+    String serviceKey,
+    String threadId,
+    String turnId, {
+    bool loadMore = false,
+  });
+
+  /// Every item of one turn, oldest first — for jumping to a turn the
+  /// transcript hasn't scrolled back to yet.
+  Future<List<ThreadItem>> appThreadTurnItems(
+    String serviceKey,
+    String threadId,
+    String turnId,
+  );
+
+  /// The latest server-reported runtime config for a thread (from its
+  /// start/resume response, kept fresh by `thread/settings/updated`
+  /// notifications), or null when the server hasn't reported any. Reads the
+  /// bridge's cache only — no RPC — so it's cheap to call after a send.
+  ThreadRuntimeConfig? appThreadRuntimeConfig(
+    String serviceKey,
+    String threadId,
+  );
+
+  /// Send a user message (text and/or attached images), starting a model
+  /// turn. [images] are `data:image/...;base64,...` URLs — the wire form that
+  /// reaches BOTH local and relay-tunneled remote app-servers; [text] may be
+  /// empty when at least one image is attached. [model] / [approvalPolicy] /
+  /// [sandbox] are optional per-turn overrides (apply to this and subsequent
+  /// turns) so model and permission can change mid-conversation.
+  /// [collaborationMode] ("plan" / "default", or null to leave unchanged) is
+  /// sticky on the thread, so pass "default" to leave plan mode.
+  /// [reasoningEffort] ("low"/"medium"/"high", or null for the model default) is
+  /// the "thinking level" for this turn. The reply streams via [appEvents].
+  Future<void> appTurnStart(
+    String serviceKey,
+    String threadId,
+    String text, {
+    List<String> images = const [],
+    String? model,
+    String? approvalPolicy,
+    String? approvalsReviewer,
+    String? serviceTier,
+    String? sandbox,
+    String? collaborationMode,
+    String? reasoningEffort,
+  });
+
+  /// Send an asynchronous answer and return the accepted active turn ID.
+  Future<String> appTurnSteer(
+    String serviceKey,
+    String threadId,
+    String? turnId,
+    String text, {
+    List<String> images = const [],
+  });
+
+  /// Interrupt the running turn. [turnId] (from the latest `turn/started`) is
+  /// required by the server to identify which turn to abort.
+  Future<void> appTurnInterrupt(
+    String serviceKey,
+    String threadId, {
+    String? turnId,
+  });
+
+  /// Answer a server approval request ([requestId] from an [AppEvent]).
+  /// [decision] is a ReviewDecision wire value (`approved`/`denied`/`abort`).
+  Future<void> appRespondApproval(
+    String serviceKey,
+    String requestId,
+    String decision,
+  );
+
+  /// Answer an `item/tool/requestUserInput` elicitation — the model asking
+  /// structured questions (NOT a command/file approval). [requestId] is from the
+  /// `item/tool/requestUserInput` [AppEvent]; [answersJson] is a JSON object
+  /// mapping each question id to its chosen answer string(s)
+  /// (e.g. `{"theme":["山水抒怀"]}`); an empty object `{}` cancels.
+  Future<void> appRespondUserInput(
+    String serviceKey,
+    String requestId,
+    String answersJson,
+  );
+
+  // --- Local session takeover (shared CODEX_HOME) ---
+
+  /// List every codex session under the shared `CODEX_HOME`, newest first,
+  /// each annotated with whether it is safe to resume. Reads local disk +
+  /// the process table; no app-server connection required.
+  Future<List<LocalSession>> appLocalSessions();
+
+  /// Inspect one session's live resume-safety and the processes a force
+  /// takeover would evict. Poll before showing a resume button so the UI
+  /// reflects live ownership.
+  Future<SessionLiveness> appSessionLiveness(String threadId);
+
+  /// Force-resume a session into the app-server behind [serviceKey]:
+  /// best-effort evict the rollout's holders (never our own app-server), then
+  /// `thread/resume` regardless of the eviction outcome. Gate on explicit user
+  /// confirmation; do not call while a turn is actively running.
+  Future<ForceResumeReport> appForceResume(String serviceKey, String threadId);
+
+  /// Read a local session's transcript for READ-ONLY viewing. Parses the
+  /// on-disk rollout directly (no app-server connection, no resume, no write),
+  /// so it works even while another codex client still owns the session.
+  /// Items are in the same shape as [appThreadRead]. Poll alongside
+  /// [appSessionLiveness] to follow a running session and notice when it goes
+  /// idle (resume-eligible).
+  Future<List<ThreadItem>> appLocalSessionTranscript(String threadId);
+
+  // --- Remote (meta service) sessions + per-thread config ---
+  //
+  // The same inventory / transcript / force-resume as the `appLocal*` methods,
+  // but for a (possibly remote) host reached over its `meta:` tunnel. Each
+  // takes the app-server [serviceKey] being viewed; the meta key is derived
+  // internally. Lets a phone view + resume a desktop host's sessions, and
+  // persists per-thread config on the host (shared across devices).
+
+  /// Remote analogue of [appLocalSessions] for the host behind [serviceKey].
+  /// [runningOnly] requests a lightweight inventory of active writers.
+  Future<List<LocalSession>> metaSessions(
+    String serviceKey, {
+    bool runningOnly = false,
+  });
+
+  /// Remote analogue of [appSessionLiveness].
+  Future<SessionLiveness> metaSessionLiveness(
+    String serviceKey,
+    String threadId,
+  );
+
+  /// Live read-only transcript + ownership updates for a session held by
+  /// another app-server. The stream's first event is a complete snapshot.
+  Stream<SessionFollowUpdate> metaSessionEvents(
+    String serviceKey,
+    String threadId,
+  );
+
+  /// Remote analogue of [appLocalSessionTranscript].
+  Future<List<ThreadItem>> metaSessionTranscript(
+    String serviceKey,
+    String threadId,
+  );
+
+  /// Remote analogue of [appForceResume]: the host evicts the rollout's holders
+  /// and resumes it into its colocated app-server. Gate on explicit
+  /// confirmation; do not call while a turn is actively running.
+  Future<ForceResumeReport> metaForceResume(String serviceKey, String threadId);
+
+  /// Upload a document/file attachment to the host behind [serviceKey] (over
+  /// its meta tunnel — loopback when this app is the host). Returns the
+  /// absolute HOST filesystem path where it was stored; the turn text then
+  /// references that path so the agent reads the file with its own tools —
+  /// codex's native host-file workflow (its input protocol carries only text
+  /// and images inline; there is no document slot).
+  Future<String> metaUploadFile(
+    String serviceKey,
+    String fileName,
+    Uint8List bytes,
+  );
+
+  /// Read a thread's persisted config from the host behind [serviceKey]
+  /// (all-null when none stored).
+  Future<ThreadConfig> metaThreadConfigGet(String serviceKey, String threadId);
+
+  /// Persist a thread's config on the host behind [serviceKey]; returns the
+  /// stored value.
+  Future<ThreadConfig> metaThreadConfigSet(
+    String serviceKey,
+    String threadId,
+    ThreadConfig config,
+  );
+
+  /// Read the project-folder config (roots + default) of the host behind
+  /// [serviceKey] — what a new session's folder browser starts from.
+  Future<ProjectConfig> metaProjectConfig(String serviceKey);
+
+  /// Replace the project-folder config of the host behind [serviceKey]; returns
+  /// the stored value. The desktop host edits this over its own loopback tunnel.
+  Future<ProjectConfig> metaSetProjectConfig(
+    String serviceKey,
+    List<String> projectRoots,
+    String? defaultProject,
+  );
+
+  /// List the sub-directories of [path] on the host behind [serviceKey], for
+  /// the remote project-folder browser. Throws if [path] is outside the host's
+  /// configured project roots.
+  Future<List<HostDirEntry>> metaListDir(String serviceKey, String path);
+
+  /// List the files (not sub-directories) in [path] on the host behind
+  /// [serviceKey], for the file-transfer panel. Throws if [path] is outside the
+  /// host's configured project roots.
+  Future<List<HostFileEntry>> metaListFiles(String serviceKey, String path);
+
+  /// Download a host file's raw bytes (root-confined) from the host behind
+  /// [serviceKey], for saving to local disk. Throws if [path] is outside the
+  /// configured roots.
+  Future<Uint8List> metaReadFile(String serviceKey, String path);
+
+  /// Verify that the selected host shares this device's filesystem.
+  Future<bool> metaHostIsLocal(String serviceKey);
+
+  /// Read up to 8 MiB after an explicit Preview action.
+  Future<FilePreviewData> metaFilePreview(
+    String serviceKey,
+    String? threadId,
+    String href,
+  );
+
+  /// Stream into a new staging file on this device after a Download action.
+  Future<void> metaFileDownload(
+    String serviceKey,
+    String? threadId,
+    String href,
+    String destination,
+  );
+
+  /// Read an image that [threadId]'s transcript already references, so it can
+  /// render inline. Unlike [metaReadFile] this is not root-confined — the host
+  /// authorises user attachments and typed generated artifacts, which is what
+  /// makes a pasted screenshot in the OS temp directory visible to a remote
+  /// controller without granting it a general file read. Throws for a path the
+  /// transcript never mentioned, and on a host too old to serve the route.
+  Future<Uint8List> metaReadThreadImage(
+    String serviceKey,
+    String threadId,
+    String path,
+  );
+
+  /// Upload local [bytes] as [fileName] into host directory [dir]
+  /// (root-confined) on the host behind [serviceKey]; returns the absolute HOST
+  /// path where it landed. Throws if [dir] is outside the roots, or on a name
+  /// collision (the host never overwrites).
+  Future<String> metaWriteFile(
+    String serviceKey,
+    String dir,
+    String fileName,
+    Uint8List bytes,
+  );
+}

@@ -1,0 +1,200 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-D warnings"
+  # Pinned Flutter version. Keep in sync with `apps/flutter/.fvmrc`
+  # and `apps/flutter/pubspec.yaml`'s `environment.flutter` field.
+  FLUTTER_VERSION: 3.44.0
+
+jobs:
+  # Lightweight gate: decide which surfaces the change touches. Pure stdlib
+  # (tomllib + git diff) -- no cargo, no submodules, no compilation -- so the
+  # Rust/Flutter jobs below are skipped entirely when nothing relevant changed.
+  changes:
+    name: detect affected surfaces
+    runs-on: ubuntu-latest
+    outputs:
+      rust_mode: ${{ steps.detect.outputs.rust_mode }}
+      test_crates: ${{ steps.detect.outputs.test_crates }}
+      clippy_crates: ${{ steps.detect.outputs.clippy_crates }}
+      flutter: ${{ steps.detect.outputs.flutter }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect affected surfaces
+        id: detect
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: python3 scripts/ci_affected.py detect
+
+  fmt:
+    name: rust fmt
+    needs: changes
+    if: needs.changes.outputs.rust_mode != 'none'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Rust (nightly for rustfmt)
+        # Pin to the same nightly the project's `rust-toolchain.toml`
+        # uses so cargo-fmt's enumeration logic (which can change
+        # between nightly builds) and rustfmt itself stay
+        # bit-for-bit identical to local.
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly-2026-06-01
+          components: rustfmt
+
+      - name: cargo fmt --check
+        # Restrict to first-party crates so we don't accidentally fmt
+        # the path-dep tree (deps/uni-stream, deps/kanal, etc.) — that is
+        # why this is an explicit -p list and not `cargo fmt --all`. fmt
+        # is cheap and whole-crate, so we lint every workspace member
+        # whenever any Rust surface changed rather than subsetting. The
+        # list must stay in sync with `members` in the root `Cargo.toml`
+        # (and with AGENTS.md §7): add new crates in all three places.
+        run: |
+          cargo fmt --check \
+            -p pocket-codex-core \
+            -p pocket-codex-codex \
+            -p pocket-codex-pb \
+            -p pocket-codex-api-proxy \
+            -p pocket-codex-host-svc \
+            -p pocket-codex-cli \
+            -p pocket_codex_bridge \
+            -p pocket-codex-account-proto \
+            -p pocket-codex-store \
+            -p pocket-codex-auth \
+            -p pocket-codex-backend
+
+  clippy:
+    name: rust clippy
+    needs: changes
+    if: needs.changes.outputs.rust_mode != 'none'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Rust (stable)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run clippy for affected crates
+        # subset -> clippy only the changed crates; all -> the whole
+        # workspace. See scripts/ci_affected.py.
+        env:
+          MODE: ${{ needs.changes.outputs.rust_mode }}
+          CRATES: ${{ needs.changes.outputs.clippy_crates }}
+        run: python3 scripts/ci_affected.py run-clippy
+
+  test:
+    name: rust test
+    needs: changes
+    if: needs.changes.outputs.rust_mode != 'none'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Rust (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check Android dependency boundary
+        run: python3 scripts/check_mobile_dependencies.py
+
+      - name: Run tests for affected crates
+        # subset -> the changed crates + their dependents; all -> the full
+        # workspace. See scripts/ci_affected.py.
+        env:
+          MODE: ${{ needs.changes.outputs.rust_mode }}
+          CRATES: ${{ needs.changes.outputs.test_crates }}
+        run: python3 scripts/ci_affected.py run-test
+
+  flutter:
+    name: flutter analyze + test
+    needs: changes
+    if: needs.changes.outputs.flutter == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: flutter pub get
+        working-directory: apps/flutter
+        run: flutter pub get
+
+      - name: dart format --output=none --set-exit-if-changed
+        working-directory: apps/flutter
+        # The whole lib tree: hand-written sources must be clean, and the
+        # generated trees (lib/src/rust via FRB, lib/l10n/gen via gen-l10n)
+        # already emit dart-format-clean output, so including them costs
+        # nothing and catches hand edits to files that should be regenerated.
+        run: dart format --output=none --set-exit-if-changed lib test integration_test
+
+      - name: flutter analyze
+        working-directory: apps/flutter
+        run: flutter analyze
+
+      - name: flutter test
+        working-directory: apps/flutter
+        run: flutter test
+
+  # Single required status that reflects the whole run. Always runs, so a
+  # skipped Rust/Flutter job (path-filtered out) keeps the gate green, while
+  # any real failure or cancellation fails it.
+  ci-result:
+    name: CI result
+    needs: [changes, fmt, clippy, test, flutter]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify no required job failed
+        run: |
+          results="${{ needs.changes.result }} ${{ needs.fmt.result }} ${{ needs.clippy.result }} ${{ needs.test.result }} ${{ needs.flutter.result }}"
+          echo "job results: $results"
+          for r in $results; do
+            if [ "$r" = "failure" ] || [ "$r" = "cancelled" ]; then
+              echo "::error::a required job did not pass ($r)"
+              exit 1
+            fi
+          done
+          echo "all jobs passed or were skipped"
