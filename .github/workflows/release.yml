@@ -518,6 +518,14 @@ jobs:
     needs: prepare
     runs-on: ubuntu-latest
     steps:
+      # Three ABIs plus cargokit's rust-src download exceed the runner's free
+      # disk ("No space left on device"); drop toolchains this job never uses.
+      - name: Free runner disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/node_modules /opt/ghc /usr/local/.ghcup \
+            /usr/share/swift /usr/local/share/boost /opt/hostedtoolcache/CodeQL
+          docker system prune -af >/dev/null 2>&1 || true
+          df -h /
       - uses: actions/checkout@v4
         with:
           submodules: recursive
