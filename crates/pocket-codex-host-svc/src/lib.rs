@@ -14,6 +14,8 @@
 
 #![forbid(unsafe_code)]
 
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+pub mod acp;
 pub mod file_links;
 pub mod fs;
 pub mod history_sync;
@@ -116,6 +118,7 @@ pub async fn serve(
         .merge(history_sync::router(Arc::new(
             history_sync::CodexHistorySource::new(app_ws_addr),
         )));
+    let app = with_acp_management(app);
     axum::serve(listener, app)
         .await
         .context("running meta service")
@@ -159,6 +162,20 @@ pub async fn serve_generic(
     uploads_dir: PathBuf,
     session_dirs: Arc<dyn file_links::SessionDirResolver>,
 ) -> Result<()> {
+    let app = generic_app(store, host, uploads_dir, session_dirs);
+    axum::serve(listener, app)
+        .await
+        .context("running meta service")
+}
+
+/// The provider-neutral meta router served by [`serve_generic`]; the ACP meta
+/// service extends it with its history routes.
+pub(crate) fn generic_app(
+    store: Arc<ConfigStore>,
+    host: Arc<HostStore>,
+    uploads_dir: PathBuf,
+    session_dirs: Arc<dyn file_links::SessionDirResolver>,
+) -> Router {
     let state = Arc::new(AppState {
         // Never read by the generic routes.
         app_ws_addr: SocketAddr::from(([127, 0, 0, 1], 0)),
@@ -171,9 +188,19 @@ pub async fn serve_generic(
         .route("/fs/thread-file", get(file_links::read))
         .layer(tower_http::compression::CompressionLayer::new())
         .with_state(state);
-    axum::serve(listener, app)
-        .await
-        .context("running meta service")
+    with_acp_management(app)
+}
+
+/// Merge the stateless `/acp/v1` remote management routes (desktop only;
+/// they answer 404 until the desktop bridge registers an implementation).
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+fn with_acp_management(app: Router) -> Router {
+    app.merge(acp::install::manage::router())
+}
+
+#[cfg(any(target_os = "android", target_os = "ios"))]
+fn with_acp_management(app: Router) -> Router {
+    app
 }
 
 /// An error rendered as `500` with the full anyhow chain in the body. The meta
